@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ajouter un jeu — GameBrain</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0b0f;
+      color: #e8eaf0;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #111318;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 40px;
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.2rem;
+      color: #00c8ff;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: #8892a4;
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #8892a4;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    label span { color: #ff4466; }
+
+    input, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      background: #16181f;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      color: #e8eaf0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #00c8ff;
+      box-shadow: 0 0 0 3px rgba(0,200,255,0.1);
+    }
+
+    input::placeholder, textarea::placeholder { color: #4a5568; }
+
+    textarea { min-height: 90px; resize: vertical; }
+
+    /* Preview image */
+    .preview-img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,0.07);
+      display: none;
+      background: #16181f;
+    }
+
+    .preview-img.visible { display: block; }
+
+    .error { color: #ff4466; font-size: 0.78rem; margin-top: 4px; display: none; }
+    .error.show { display: block; }
+
+    /* Boutons */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      display: block;
+      text-align: center;
+    }
+
+    .btn-primary { background: #00c8ff; color: #000; }
+    .btn-primary:hover:not(:disabled) { background: #33d4ff; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-ghost {
+      background: transparent;
+      color: #8892a4;
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-top: 10px;
+    }
+    .btn-ghost:hover { background: #16181f; color: #e8eaf0; }
+
+    /* Succès */
+    .success-box {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .success-icon  { font-size: 2.5rem; margin-bottom: 12px; }
+    .success-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .success-msg   { color: #8892a4; font-size: 0.875rem; margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <div class="logo">🧠 GameBrain</div>
+
+  <!-- Formulaire -->
+  <div id="zone-form">
+    <h1>➕ Ajouter un jeu</h1>
+    <p class="subtitle">Le jeu apparaîtra immédiatement sur le site.</p>
+
+    <div class="form-group">
+      <label for="name">Nom du jeu <span>*</span></label>
+      <input id="name" type="text" placeholder="Ex: Elden Ring" maxlength="80" />
+      <div class="error" id="err-name">Le nom est requis.</div>
+    </div>
+
+    <div class="form-group">
+      <label for="game-id">ID unique <span>*</span></label>
+      <input id="game-id" type="text" placeholder="Ex: elden-ring" maxlength="40" />
+      <div class="error" id="err-id">L'ID est requis (lettres minuscules et tirets uniquement).</div>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description <span>*</span></label>
+      <textarea id="description" placeholder="Décris le jeu en quelques phrases..."></textarea>
+      <div class="error" id="err-desc">La description est requise.</div>
+    </div>
+
+    <div class="form-group">
+      <label for="image">URL de l'image</label>
+      <input id="image" type="url" placeholder="https://..." />
+      <img class="preview-img" id="preview" alt="Aperçu" />
+    </div>
+
+    <button class="btn btn-primary" id="btn-add" onclick="addGame()">✅ Ajouter le jeu</button>
+    <a href="index.html" class="btn btn-ghost">← Retour</a>
+  </div>
+
+  <!-- Succès -->
+  <div class="success-box" id="zone-success">
+    <div class="success-icon">🎮</div>
+    <div class="success-title" id="s-title">Jeu ajouté !</div>
+    <p class="success-msg" id="s-msg">Il est maintenant visible sur la page d'accueil.</p>
+    <button class="btn btn-primary" onclick="resetForm()">➕ Ajouter un autre jeu</button>
+    <a href="index.html" class="btn btn-ghost">🏠 Accueil</a>
+  </div>
+
+</div>
+
+<script type="module">
+  import { db } from "./js/firebase-config.js";
+  import { doc, getDoc, setDoc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // Auto-générer l'ID depuis le nom
+  document.getElementById("name").addEventListener("input", (e) => {
+    const id = e.target.value
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // enlève accents
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    document.getElementById("game-id").value = id;
+  });
+
+  // Aperçu de l'image
+  document.getElementById("image").addEventListener("input", (e) => {
+    const preview = document.getElementById("preview");
+    const url = e.target.value.trim();
+    if (url) {
+      preview.src = url;
+      preview.classList.add("visible");
+      preview.onerror = () => preview.classList.remove("visible");
+    } else {
+      preview.classList.remove("visible");
+    }
+  });
+
+  window.addGame = async function() {
+    // Reset erreurs
+    document.querySelectorAll(".error").forEach(e => e.classList.remove("show"));
+
+    const name  = document.getElementById("name").value.trim();
+    const id    = document.getElementById("game-id").value.trim();
+    const desc  = document.getElementById("description").value.trim();
+    const image = document.getElementById("image").value.trim();
+    const btn   = document.getElementById("btn-add");
+
+    // Validation
+    let ok = true;
+    if (!name) { document.getElementById("err-name").classList.add("show"); ok = false; }
+    if (!id || !/^[a-z0-9-]+$/.test(id)) { document.getElementById("err-id").classList.add("show"); ok = false; }
+    if (!desc) { document.getElementById("err-desc").classList.add("show"); ok = false; }
+    if (!ok) return;
+
+    btn.disabled    = true;
+    btn.textContent = "Ajout en cours...";
+
+    try {
+      // Vérifie si l'ID existe déjà
+      const existing = await getDoc(doc(db, "games", id));
+      if (existing.exists()) {
+        document.getElementById("err-id").textContent = "Cet ID existe déjà. Choisis-en un autre.";
+        document.getElementById("err-id").classList.add("show");
+        btn.disabled    = false;
+        btn.textContent = "✅ Ajouter le jeu";
+        return;
+      }
+
+      await setDoc(doc(db, "games", id), {
+        name,
+        description: desc,
+        image:       image || "",
+        createdAt:   serverTimestamp()
+      });
+
+      // Succès
+      document.getElementById("s-title").textContent = `"${name}" ajouté !`;
+      document.getElementById("zone-form").style.display    = "none";
+      document.getElementById("zone-success").style.display = "block";
+
+    } catch (err) {
+      alert("Erreur : " + err.message);
+      btn.disabled    = false;
+      btn.textContent = "✅ Ajouter le jeu";
+    }
+  };
+
+  window.resetForm = function() {
+    document.getElementById("name").value        = "";
+    document.getElementById("game-id").value     = "";
+    document.getElementById("description").value = "";
+    document.getElementById("image").value       = "";
+    document.getElementById("preview").classList.remove("visible");
+    document.getElementById("btn-add").disabled    = false;
+    document.getElementById("btn-add").textContent = "✅ Ajouter le jeu";
+    document.getElementById("err-id").textContent  = "L'ID est requis (lettres minuscules et tirets uniquement).";
+    document.getElementById("zone-form").style.display    = "block";
+    document.getElementById("zone-success").style.display = "none";
+  };
+</script>
+</body>
+</html>
