@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un guide — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Éditeur de contenu */
+    .editor-toolbar {
+      display: flex;
+      gap: 4px;
+      padding: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      flex-wrap: wrap;
+    }
+
+    .editor-btn {
+      padding: 4px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .editor-btn:hover {
+      color: var(--accent);
+      border-color: var(--border-accent);
+      background: var(--accent-dim);
+    }
+
+    .content-textarea {
+      border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
+      font-family: var(--font-mono) !important;
+      font-size: 0.9rem !important;
+      min-height: 300px;
+    }
+
+    /* Compteur caractères */
+    .char-counter {
+      text-align: right;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .char-counter.warning { color: #fbbf24; }
+    .char-counter.limit   { color: var(--neon-red); }
+
+    /* Preview card */
+    .preview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-md);
+      padding: var(--gap-lg);
+      margin-top: var(--gap-lg);
+    }
+
+    .preview-label {
+      font-size: 0.75rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: var(--gap-md);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==============================
+       🧭 NAVIGATION
+       ============================== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="create-guide.html" class="active">Créer un guide</a></li>
+      </ul>
+      <div class="nav-user" id="nav-user" style="display:flex;">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+      <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="container" style="max-width: 800px;">
+
+      <!-- En-tête -->
+      <div style="padding: var(--gap-xl) 0 var(--gap-lg);">
+        <a href="dashboard.html" style="color:var(--text-muted); font-size:0.85rem;">← Dashboard</a>
+        <h1 style="margin-top: var(--gap-md);">✍ Créer un guide</h1>
+        <p style="color: var(--text-secondary); margin-top: var(--gap-sm);">
+          Partage tes stratégies et astuces avec la communauté GameBrain.
+        </p>
+      </div>
+
+      <!-- ==============================
+           📝 FORMULAIRE
+           ============================== -->
+      <form id="form-create-guide" novalidate>
+
+        <!-- Jeu -->
+        <div class="form-group">
+          <label class="form-label" for="game-select">
+            Jeu concerné <span class="required">*</span>
+          </label>
+          <select id="game-select" class="form-select" required>
+            <option value="">— Choisir un jeu —</option>
+          </select>
+          <span class="form-error" id="error-game"></span>
+        </div>
+
+        <!-- Titre -->
+        <div class="form-group">
+          <label class="form-label" for="guide-title">
+            Titre du guide <span class="required">*</span>
+          </label>
+          <input
+            id="guide-title"
+            type="text"
+            class="form-input"
+            placeholder="Ex: Comment survivre à la première nuit dans Minecraft"
+            maxlength="100"
+            required
+          />
+          <div class="char-counter" id="title-counter">0 / 100</div>
+          <span class="form-error" id="error-title"></span>
+        </div>
+
+        <!-- Contenu avec barre d'outils -->
+        <div class="form-group">
+          <label class="form-label">
+            Contenu <span class="required">*</span>
+          </label>
+          <div class="editor-toolbar">
+            <button type="button" class="editor-btn" data-insert="**texte en gras**">B</button>
+            <button type="button" class="editor-btn" data-insert="*texte en italique*"><i>I</i></button>
+            <button type="button" class="editor-btn" data-insert="## Titre de section">H2</button>
+            <button type="button" class="editor-btn" data-insert="### Sous-titre">H3</button>
+            <button type="button" class="editor-btn" data-insert="- Élément de liste">• Liste</button>
+            <button type="button" class="editor-btn" data-insert="1. Étape">123 Étapes</button>
+            <button type="button" class="editor-btn" data-insert="`code`">Code</button>
+            <button type="button" class="editor-btn" data-insert="---">Séparateur</button>
+            <button type="button" class="editor-btn" data-insert="> Citation">Citation</button>
+          </div>
+          <textarea
+            id="guide-content"
+            class="form-input content-textarea"
+            placeholder="Rédige ton guide ici. Tu peux utiliser Markdown pour la mise en forme..."
+            maxlength="10000"
+            required
+          ></textarea>
+          <div class="char-counter" id="content-counter">0 / 10000</div>
+          <span class="form-error" id="error-content"></span>
+          <p class="form-hint">Supporte Markdown : **gras**, *italique*, ## titres, - listes</p>
+        </div>
+
+        <!-- Aperçu -->
+        <div class="preview-card" id="guide-preview" style="display:none;">
+          <div class="preview-label">👁 Aperçu de ta carte</div>
+          <article class="guide-card" style="cursor:default; pointer-events:none;">
+            <div class="guide-card-header">
+              <span class="guide-game-tag" id="preview-game">Jeu</span>
+            </div>
+            <h3 class="guide-card-title" id="preview-title">Titre du guide</h3>
+            <p class="guide-card-preview" id="preview-content">Contenu du guide...</p>
+            <footer class="guide-card-footer">
+              <span class="guide-author" id="preview-author">👤 Toi</span>
+              <span class="guide-date">À l'instant</span>
+              <span class="guide-likes">❤ 0</span>
+            </footer>
+          </article>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; gap: var(--gap-md); margin-top: var(--gap-xl); flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary" id="btn-preview">
+            👁 Aperçu
+          </button>
+          <button type="submit" class="btn btn-primary btn-lg" id="btn-submit">
+            🚀 Publier le guide
+          </button>
+          <a href="dashboard.html" class="btn btn-ghost">Annuler</a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { db, auth }      from "./js/firebase-config.js";
+    import { requireAuth, initNavAuth, logoutUser, getUserProfile } from "./js/auth.js";
+    import {
+      collection, query, orderBy, getDocs,
+      addDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { showToast, showLoader, hideLoader } from "./js/main.js";
+
+    // Protection page
+    const user    = await requireAuth();
+    const profile = await getUserProfile(user.uid);
+
+    // Navbar
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+
+    // Mobile nav
+    document.getElementById("nav-toggle")?.addEventListener("click", () => {
+      document.getElementById("nav-links").classList.toggle("open");
+    });
+
+    // ── Pré-sélection jeu depuis URL
+    const params      = new URLSearchParams(window.location.search);
+    const preGameId   = params.get("gameId");
+
+    // ── Chargement des jeux
+    async function loadGames() {
+      const select = document.getElementById("game-select");
+      try {
+        const snap = await getDocs(query(collection(db, "games"), orderBy("name")));
+        snap.forEach(d => {
+          const opt   = document.createElement("option");
+          opt.value   = d.id;
+          opt.textContent = d.data().name;
+          if (preGameId && d.id === preGameId) opt.selected = true;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        showToast("Impossible de charger les jeux.", "error");
+      }
+    }
+    loadGames();
+
+    // ── Compteurs de caractères
+    function updateCounter(inputId, counterId, max) {
+      const input   = document.getElementById(inputId);
+      const counter = document.getElementById(counterId);
+      input?.addEventListener("input", () => {
+        const len       = input.value.length;
+        counter.textContent = `${len} / ${max}`;
+        counter.className   = "char-counter";
+        if (len > max * 0.8)   counter.classList.add("warning");
+        if (len >= max * 0.95) counter.classList.add("limit");
+      });
+    }
+    updateCounter("guide-title",   "title-counter",   100);
+    updateCounter("guide-content", "content-counter", 10000);
+
+    // ── Insertion snippets Markdown
+    document.querySelectorAll(".editor-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const textarea = document.getElementById("guide-content");
+        const snippet  = btn.dataset.insert;
+        const start    = textarea.selectionStart;
+        const end      = textarea.selectionEnd;
+        const before   = textarea.value.substring(0, start);
+        const after    = textarea.value.substring(end);
+        textarea.value = `${before}\n${snippet}\n${after}`;
+        textarea.focus();
+        textarea.selectionStart = textarea.selectionEnd = start + snippet.length + 2;
+        textarea.dispatchEvent(new Event("input"));
+      });
+    });
+
+    // ── Aperçu
+    document.getElementById("btn-preview")?.addEventListener("click", () => {
+      const preview = document.getElementById("guide-preview");
+      const gameSelect  = document.getElementById("game-select");
+      const title   = document.getElementById("guide-title").value || "Titre du guide";
+      const content = document.getElementById("guide-content").value || "Contenu...";
+      const gameName = gameSelect.options[gameSelect.selectedIndex]?.text || "Jeu";
+
+      document.getElementById("preview-title").textContent   = title;
+      document.getElementById("preview-content").textContent = content.substring(0, 130) + "...";
+      document.getElementById("preview-game").textContent    = gameName;
+      document.getElementById("preview-author").textContent  = `👤 ${profile?.username || user.displayName}`;
+
+      preview.style.display = preview.style.display === "none" ? "block" : "none";
+    });
+
+    // ── Soumission du formulaire
+    document.getElementById("form-create-guide").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Reset erreurs
+      ["game", "title", "content"].forEach(id => {
+        const el = document.getElementById(`error-${id}`);
+        if (el) el.textContent = "";
+      });
+
+      const gameId  = document.getElementById("game-select").value;
+      const title   = document.getElementById("guide-title").value.trim();
+      const content = document.getElementById("guide-content").value.trim();
+      const btn     = document.getElementById("btn-submit");
+
+      // Validation
+      let valid = true;
+      if (!gameId)       { document.getElementById("error-game").textContent    = "Sélectionne un jeu."; valid = false; }
+      if (!title)        { document.getElementById("error-title").textContent   = "Le titre est requis."; valid = false; }
+      if (!content || content.length < 50) {
+        document.getElementById("error-content").textContent = "Le contenu doit faire au moins 50 caractères.";
+        valid = false;
+      }
+      if (!valid) return;
+
+      btn.disabled    = true;
+      btn.textContent = "Publication en cours...";
+      showLoader();
+
+      try {
+        await addDoc(collection(db, "guides"), {
+          gameId,
+          title,
+          content,
+          authorId:      user.uid,
+          authorName:    profile?.username || user.displayName || "Anonyme",
+          authorVerified: profile?.verified || false,
+          likesCount:    0,
+          createdAt:     serverTimestamp()
+        });
+
+        showToast("Guide publié avec succès ! 🎉", "success");
+        window.location.href = `game.html?id=${gameId}`;
+      } catch (err) {
+        console.error("Erreur publication :", err);
+        showToast("Erreur lors de la publication. Réessaie.", "error");
+        btn.disabled    = false;
+        btn.textContent = "🚀 Publier le guide";
+      } finally {
+        hideLoader();
+      }
+    });
+  </script>
+
+</body>
+</html>

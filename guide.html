@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guide — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Rendu Markdown simple */
+    .guide-body { line-height: 1.9; color: var(--text-primary); }
+    .guide-body h2 { font-size: 1.4rem; color: var(--accent); margin: var(--gap-xl) 0 var(--gap-md); border-bottom: 1px solid var(--border); padding-bottom: var(--gap-sm); }
+    .guide-body h3 { font-size: 1.1rem; color: var(--text-primary); margin: var(--gap-lg) 0 var(--gap-sm); }
+    .guide-body p  { margin-bottom: var(--gap-md); }
+    .guide-body ul, .guide-body ol { padding-left: 24px; margin-bottom: var(--gap-md); }
+    .guide-body li { margin-bottom: 6px; }
+    .guide-body code { font-family: var(--font-mono); background: var(--bg-input); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; color: var(--neon-green); }
+    .guide-body blockquote { border-left: 3px solid var(--accent); padding-left: var(--gap-md); color: var(--text-secondary); margin: var(--gap-md) 0; }
+    .guide-body hr { border: none; border-top: 1px solid var(--border); margin: var(--gap-xl) 0; }
+    .guide-body strong { color: var(--text-primary); font-weight: 700; }
+    .guide-body em { color: var(--text-secondary); font-style: italic; }
+
+    /* Sidebar */
+    .guide-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: var(--gap-xl);
+      align-items: start;
+    }
+
+    .guide-sidebar {
+      position: sticky;
+      top: 80px;
+    }
+
+    .sidebar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--gap-lg);
+      margin-bottom: var(--gap-md);
+    }
+
+    .sidebar-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: var(--gap-md);
+    }
+
+    @media (max-width: 768px) {
+      .guide-layout { grid-template-columns: 1fr; }
+      .guide-sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+      </ul>
+      <div class="nav-actions" id="nav-actions">
+        <a href="login.html" class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+      </div>
+      <div class="nav-user" id="nav-user">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+      <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="container">
+
+      <!-- Fil d'Ariane -->
+      <nav style="padding: var(--gap-lg) 0; font-size:0.85rem; color:var(--text-muted);">
+        <a href="index.html" style="color:var(--text-muted);">Accueil</a>
+        <span style="margin:0 8px;">›</span>
+        <a href="#" id="breadcrumb-game" style="color:var(--text-muted);">Jeu</a>
+        <span style="margin:0 8px;">›</span>
+        <span style="color:var(--text-secondary);" id="breadcrumb-title">Guide</span>
+      </nav>
+
+      <div class="guide-layout">
+
+        <!-- ==============================
+             📖 CONTENU PRINCIPAL
+             ============================== -->
+        <article>
+          <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;">
+
+            <!-- En-tête du guide -->
+            <div style="padding: var(--gap-xl); border-bottom: 1px solid var(--border);">
+              <div style="display:flex; gap:var(--gap-sm); flex-wrap:wrap; margin-bottom:var(--gap-md);">
+                <span class="guide-game-tag" id="guide-game-tag">Jeu</span>
+                <span class="badge-verified" id="guide-verified" style="display:none;">✓ Auteur vérifié</span>
+              </div>
+
+              <h1 id="guide-title" style="font-size:clamp(1.4rem,3vw,2rem); margin-bottom:var(--gap-md);">
+                Chargement...
+              </h1>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:var(--gap-sm);">
+                <div style="display:flex; align-items:center; gap:var(--gap-md); font-size:0.875rem; color:var(--text-secondary);">
+                  <span>👤 <strong id="guide-author">Auteur</strong></span>
+                  <span id="guide-date">–</span>
+                </div>
+                <div style="display:flex; gap:var(--gap-sm);">
+                  <button class="btn-like" id="btn-like" onclick="handleLike()">
+                    ❤ <span id="like-count">0</span>
+                  </button>
+                  <button class="btn-favorite" id="btn-fav" onclick="handleFavorite()" title="Ajouter aux favoris">☆</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Corps du guide -->
+            <div style="padding: var(--gap-xl);">
+              <div class="guide-body" id="guide-body">
+                <!-- Contenu rendu dynamiquement -->
+                <div class="skeleton-card" style="height:400px;"></div>
+              </div>
+            </div>
+
+          </div>
+        </article>
+
+        <!-- ==============================
+             📌 SIDEBAR
+             ============================== -->
+        <aside class="guide-sidebar">
+
+          <!-- Actions -->
+          <div class="sidebar-card">
+            <p class="sidebar-title">Actions</p>
+            <div style="display:flex; flex-direction:column; gap:var(--gap-sm);">
+              <button class="btn btn-primary btn-full" id="sidebar-btn-like" onclick="handleLike()">
+                ❤ Liker ce guide (<span id="sidebar-like-count">0</span>)
+              </button>
+              <button class="btn btn-secondary btn-full" id="sidebar-btn-fav" onclick="handleFavorite()">
+                ☆ Ajouter aux favoris
+              </button>
+            </div>
+          </div>
+
+          <!-- Infos du guide -->
+          <div class="sidebar-card">
+            <p class="sidebar-title">Infos</p>
+            <div style="display:flex; flex-direction:column; gap:var(--gap-sm); font-size:0.875rem; color:var(--text-secondary);">
+              <div>🎮 Jeu : <strong id="info-game" style="color:var(--text-primary);">–</strong></div>
+              <div>👤 Auteur : <strong id="info-author" style="color:var(--text-primary);">–</strong></div>
+              <div>📅 Publié : <strong id="info-date" style="color:var(--text-primary);">–</strong></div>
+              <div>❤ Likes : <strong id="info-likes" style="color:var(--text-primary);">0</strong></div>
+            </div>
+          </div>
+
+          <!-- Lien vers le jeu -->
+          <div class="sidebar-card">
+            <p class="sidebar-title">Voir plus</p>
+            <a href="#" id="link-more-guides" class="btn btn-outline btn-full btn-sm">
+              📚 Autres guides pour ce jeu
+            </a>
+          </div>
+
+        </aside>
+
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { db, auth }  from "./js/firebase-config.js";
+    import { initNavAuth, logoutUser, getCurrentUser } from "./js/auth.js";
+    import {
+      doc, getDoc, collection, query, where, getDocs,
+      addDoc, deleteDoc, updateDoc, increment, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { showToast, showLoader, hideLoader, formatDate } from "./js/main.js";
+
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+    document.getElementById("nav-toggle")?.addEventListener("click", () => {
+      document.getElementById("nav-links").classList.toggle("open");
+    });
+    window.addEventListener("scroll", () => {
+      document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
+    });
+
+    const params  = new URLSearchParams(window.location.search);
+    const guideId = params.get("id");
+    if (!guideId) { window.location.href = "index.html"; }
+
+    let currentGuide   = null;
+    let currentUser    = await getCurrentUser();
+    let isFavorited    = false;
+    let hasLiked       = false;
+
+    // ── Rendu Markdown simple (sans librairie externe)
+    function renderMarkdown(text) {
+      return text
+        .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+        .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g, "<em>$1</em>")
+        .replace(/`(.+?)`/g, "<code>$1</code>")
+        .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
+        .replace(/^- (.+)$/gm, "<li>$1</li>")
+        .replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>")
+        .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
+        .replace(/^---$/gm, "<hr>")
+        .replace(/\n\n/g, "</p><p>")
+        .replace(/^(?!<[h|u|b|l|hr])(.+)$/gm, "<p>$1</p>");
+    }
+
+    // ── Chargement du guide
+    async function loadGuide() {
+      showLoader();
+      try {
+        const snap = await getDoc(doc(db, "guides", guideId));
+        if (!snap.exists()) {
+          showToast("Guide introuvable.", "error");
+          window.location.href = "index.html";
+          return;
+        }
+
+        currentGuide = { id: snap.id, ...snap.data() };
+
+        // Charger le jeu
+        const gameSnap = await getDoc(doc(db, "games", currentGuide.gameId));
+        const gameName = gameSnap.exists() ? gameSnap.data().name : "Jeu";
+
+        // Breadcrumb
+        const breadcrumbGame = document.getElementById("breadcrumb-game");
+        if (breadcrumbGame) {
+          breadcrumbGame.textContent = gameName;
+          breadcrumbGame.href = `game.html?id=${currentGuide.gameId}`;
+        }
+        document.getElementById("breadcrumb-title").textContent = currentGuide.title;
+        document.title = `${currentGuide.title} — GameBrain`;
+
+        // En-tête
+        document.getElementById("guide-title").textContent    = currentGuide.title;
+        document.getElementById("guide-game-tag").textContent = gameName;
+        document.getElementById("guide-author").textContent   = currentGuide.authorName || "Anonyme";
+        document.getElementById("guide-date").textContent     = formatDate(currentGuide.createdAt);
+
+        if (currentGuide.authorVerified) {
+          document.getElementById("guide-verified").style.display = "inline-flex";
+        }
+
+        // Likes
+        const likes = currentGuide.likesCount || 0;
+        document.getElementById("like-count").textContent         = likes;
+        document.getElementById("sidebar-like-count").textContent = likes;
+
+        // Sidebar
+        document.getElementById("info-game").textContent   = gameName;
+        document.getElementById("info-author").textContent = currentGuide.authorName || "Anonyme";
+        document.getElementById("info-date").textContent   = formatDate(currentGuide.createdAt);
+        document.getElementById("info-likes").textContent  = likes;
+
+        // Lien vers le jeu
+        document.getElementById("link-more-guides").href = `game.html?id=${currentGuide.gameId}`;
+
+        // Contenu
+        const body = document.getElementById("guide-body");
+        body.innerHTML = renderMarkdown(currentGuide.content || "");
+
+        // Si connecté, vérifier favoris
+        if (currentUser) {
+          const favsSnap = await getDocs(query(
+            collection(db, "favorites"),
+            where("userId",  "==", currentUser.uid),
+            where("guideId", "==", guideId)
+          ));
+          isFavorited = !favsSnap.empty;
+          updateFavButton();
+        }
+
+      } catch (err) {
+        console.error("Erreur guide :", err);
+        showToast("Impossible de charger le guide.", "error");
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // ── Like
+    window.handleLike = async function() {
+      if (!currentUser) { showToast("Connecte-toi pour liker.", "warning"); return; }
+      if (hasLiked) { showToast("Tu as déjà liké ce guide !", "warning"); return; }
+
+      try {
+        await updateDoc(doc(db, "guides", guideId), { likesCount: increment(1) });
+        hasLiked = true;
+        const newCount = (currentGuide.likesCount || 0) + 1;
+        currentGuide.likesCount = newCount;
+        document.getElementById("like-count").textContent         = newCount;
+        document.getElementById("sidebar-like-count").textContent = newCount;
+        document.getElementById("info-likes").textContent         = newCount;
+        document.getElementById("btn-like").classList.add("liked");
+        document.getElementById("sidebar-btn-like").classList.add("liked");
+        showToast("Guide liké ! ❤", "success");
+      } catch (err) {
+        showToast("Erreur lors du like.", "error");
+      }
+    };
+
+    // ── Favoris
+    window.handleFavorite = async function() {
+      if (!currentUser) { showToast("Connecte-toi pour ajouter aux favoris.", "warning"); return; }
+
+      try {
+        const favsRef = collection(db, "favorites");
+
+        if (!isFavorited) {
+          await addDoc(favsRef, {
+            userId:    currentUser.uid,
+            guideId,
+            createdAt: serverTimestamp()
+          });
+          isFavorited = true;
+          showToast("Ajouté aux favoris !", "success");
+        } else {
+          const snap = await getDocs(query(favsRef,
+            where("userId",  "==", currentUser.uid),
+            where("guideId", "==", guideId)
+          ));
+          for (const d of snap.docs) await deleteDoc(doc(db, "favorites", d.id));
+          isFavorited = false;
+          showToast("Retiré des favoris.", "info");
+        }
+        updateFavButton();
+      } catch (err) {
+        showToast("Erreur favoris.", "error");
+      }
+    };
+
+    function updateFavButton() {
+      const text  = isFavorited ? "★ Dans mes favoris" : "☆ Ajouter aux favoris";
+      const icon  = isFavorited ? "★" : "☆";
+      const fav1  = document.getElementById("btn-fav");
+      const fav2  = document.getElementById("sidebar-btn-fav");
+      if (fav1) { fav1.textContent = icon; fav1.classList.toggle("active", isFavorited); }
+      if (fav2) { fav2.textContent = text; fav2.classList.toggle("btn-outline", !isFavorited); }
+    }
+
+    loadGuide();
+  </script>
+
+</body>
+</html>

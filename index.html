@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GameBrain — La plateforme intelligente pour gamers. Stratégies, builds et guides pour Minecraft, Zelda BOTW, Sons of the Forest." />
+  <title>GameBrain — Plateforme Gaming Intelligente</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ==============================
+       🧭 NAVIGATION
+       ============================== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <!-- Logo -->
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+
+      <!-- Liens desktop -->
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html" class="active">Accueil</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="create-guide.html">Créer un guide</a></li>
+        <li><a href="profile.html">Profil</a></li>
+      </ul>
+
+      <!-- Actions non connecté -->
+      <div class="nav-actions" id="nav-actions">
+        <a href="login.html"    class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+      </div>
+
+      <!-- Utilisateur connecté -->
+      <div class="nav-user" id="nav-user">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'" title="Mon profil">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+
+      <!-- Hamburger mobile -->
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==============================
+       🏠 HERO SECTION
+       ============================== -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-grid"></div>
+      <div class="hero-glow-1"></div>
+      <div class="hero-glow-2"></div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span>🎮</span>
+          <span>La plateforme intelligente pour gamers</span>
+        </div>
+
+        <h1 class="hero-title">
+          Maîtrise chaque jeu avec<br>
+          <span class="gradient-text">GameBrain</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Stratégies, builds et guides créés par la communauté.
+          Sauvegarde tes propres tactiques. Domine chaque univers.
+        </p>
+
+        <div class="hero-cta" id="hero-cta">
+          <a href="register.html" class="btn btn-primary btn-lg">
+            🚀 Commencer gratuitement
+          </a>
+          <a href="#games-section" class="btn btn-secondary btn-lg">
+            🎮 Explorer les jeux
+          </a>
+        </div>
+
+        <!-- Stats dynamiques -->
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-number" id="stat-total-guides">–</span>
+            <span class="hero-stat-label">Guides</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-number" id="stat-total-builds">–</span>
+            <span class="hero-stat-label">Builds</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-number" id="stat-total-games">–</span>
+            <span class="hero-stat-label">Jeux</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       🎮 SECTION JEUX
+       ============================== -->
+  <section class="games-section section" id="games-section">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 4px;">Explorez</p>
+          <h2 class="section-title">Jeux disponibles</h2>
+        </div>
+        <a href="#" class="btn btn-outline btn-sm" id="btn-view-all-games">Voir tout</a>
+      </div>
+
+      <!-- Grille des jeux — chargée dynamiquement -->
+      <div class="grid-3" id="games-grid">
+        <!-- Skeleton loading -->
+        <div class="skeleton-card" style="height:280px"></div>
+        <div class="skeleton-card" style="height:280px"></div>
+        <div class="skeleton-card" style="height:280px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       📖 GUIDES RÉCENTS
+       ============================== -->
+  <section class="section" style="background: var(--bg-surface); border-top: 1px solid var(--border);">
+    <div class="container">
+      <div class="section-header">
+        <div>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 4px;">Communauté</p>
+          <h2 class="section-title">Guides récents</h2>
+        </div>
+        <a href="dashboard.html" class="btn btn-outline btn-sm">Tous les guides →</a>
+      </div>
+
+      <div class="grid-3" id="recent-guides-home">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       💡 SECTION FEATURES
+       ============================== -->
+  <section class="section">
+    <div class="container">
+      <div style="text-align:center; margin-bottom: var(--gap-2xl);">
+        <h2>Tout ce dont tu as besoin</h2>
+        <p style="color: var(--text-secondary); margin-top: var(--gap-sm);">Une plateforme complète pour progresser dans tes jeux favoris</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="guide-card fade-in">
+          <div style="font-size: 2rem; margin-bottom: var(--gap-md);">📚</div>
+          <h3>Guides communautaires</h3>
+          <p class="guide-card-preview">Des milliers de stratégies et astuces rédigées par des joueurs expérimentés pour chaque jeu.</p>
+        </div>
+        <div class="guide-card fade-in">
+          <div style="font-size: 2rem; margin-bottom: var(--gap-md);">🔧</div>
+          <h3>Mes Builds privés</h3>
+          <p class="guide-card-preview">Sauvegarde et organise tes propres configurations et stratégies dans ton espace personnel.</p>
+        </div>
+        <div class="guide-card fade-in">
+          <div style="font-size: 2rem; margin-bottom: var(--gap-md);">⭐</div>
+          <h3>Système de favoris</h3>
+          <p class="guide-card-preview">Marque les guides qui t'intéressent et retrouve-les instantanément dans ton dashboard.</p>
+        </div>
+        <div class="guide-card fade-in">
+          <div style="font-size: 2rem; margin-bottom: var(--gap-md);">❤</div>
+          <h3>Système de likes</h3>
+          <p class="guide-card-preview">Vote pour les meilleurs guides et aide la communauté à repérer le contenu de qualité.</p>
+        </div>
+        <div class="guide-card fade-in">
+          <div style="font-size: 2rem; margin-bottom: var(--gap-md);">🔍</div>
+          <h3>Recherche avancée</h3>
+          <p class="guide-card-preview">Trouve exactement ce que tu cherches grâce aux filtres par jeu et recherche par mot-clé.</p>
+        </div>
+        <div class="guide-card fade-in">
+          <div style="font-size: 2rem; margin-bottom: var(--gap-md);">🔐</div>
+          <h3>Compte sécurisé</h3>
+          <p class="guide-card-preview">Authentification Firebase sécurisée. Tes données sont protégées et uniquement accessibles par toi.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==============================
+       🦶 FOOTER
+       ============================== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain — Fait avec ❤ pour les gamers</p>
+        <div style="display:flex; gap: var(--gap-md);">
+          <a href="login.html"    style="font-size:0.8rem; color: var(--text-muted);">Connexion</a>
+          <a href="register.html" style="font-size:0.8rem; color: var(--text-muted);">Inscription</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==============================
+       ⚡ SCRIPTS
+       ============================== -->
+  <script type="module">
+    import { auth, db }             from "./js/firebase-config.js";
+    import { initNavAuth, logoutUser } from "./js/auth.js";
+    import {
+      collection, query, orderBy, limit, getDocs, getCountFromServer
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { showLoader, hideLoader, timeAgo } from "./js/main.js";
+
+    // ── Navbar
+    initNavAuth();
+
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+
+    // Adapter les CTA si connecté
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const cta = document.getElementById("hero-cta");
+        if (cta) {
+          cta.innerHTML = `
+            <a href="dashboard.html" class="btn btn-primary btn-lg">🎮 Mon Dashboard</a>
+            <a href="create-guide.html" class="btn btn-secondary btn-lg">✍ Créer un guide</a>
+          `;
+        }
+      }
+    });
+
+    // ── Navbar scrolled
+    const navbar = document.getElementById("navbar");
+    window.addEventListener("scroll", () => {
+      navbar.classList.toggle("scrolled", window.scrollY > 30);
+    });
+
+    // ── Menu mobile
+    document.getElementById("nav-toggle")?.addEventListener("click", () => {
+      document.getElementById("nav-links").classList.toggle("open");
+    });
+
+    // ── Chargement des jeux depuis Firestore
+    async function loadGames() {
+      const grid = document.getElementById("games-grid");
+      showLoader();
+      try {
+        const snap = await getDocs(
+          query(collection(db, "games"), orderBy("name"), limit(6))
+        );
+
+        // Stat jeux
+        document.getElementById("stat-total-games").textContent = snap.size;
+
+        if (snap.empty) {
+          grid.innerHTML = `<p class="empty-state">Aucun jeu disponible.</p>`;
+          return;
+        }
+
+        let html = "";
+        snap.forEach(d => {
+          const g = d.data();
+          html += `
+            <article class="game-card fade-in" onclick="window.location.href='game.html?id=${d.id}'">
+              <div class="game-card-image-wrapper">
+                <img class="game-card-image"
+                     src="${g.image || 'assets/game-placeholder.jpg'}"
+                     alt="${g.name}"
+                     onerror="this.src='assets/game-placeholder.jpg'" />
+              </div>
+              <div class="game-card-body">
+                <h3 class="game-card-title">${g.name}</h3>
+                <p class="game-card-desc">${(g.description || '').substring(0, 100)}...</p>
+                <div class="game-card-footer">
+                  <span class="game-guides-count">📖 Guides</span>
+                  <a href="game.html?id=${d.id}" class="btn btn-primary btn-sm">Explorer →</a>
+                </div>
+              </div>
+            </article>
+          `;
+        });
+        grid.innerHTML = html;
+
+      } catch (err) {
+        console.error("Erreur jeux :", err);
+        grid.innerHTML = `<p class="error-state">Impossible de charger les jeux.</p>`;
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // ── Guides récents
+    async function loadRecentGuides() {
+      const container = document.getElementById("recent-guides-home");
+      try {
+        const gamesSnap = await getDocs(collection(db, "games"));
+        const gamesMap = {};
+        gamesSnap.forEach(d => { gamesMap[d.id] = d.data().name; });
+
+        const snap = await getDocs(
+          query(collection(db, "guides"), orderBy("createdAt", "desc"), limit(6))
+        );
+
+        // Stat guides
+        document.getElementById("stat-total-guides").textContent = snap.size < 6 ? snap.size : "50+";
+
+        if (snap.empty) {
+          container.innerHTML = `<p class="empty-state">Aucun guide pour le moment.</p>`;
+          return;
+        }
+
+        let html = "";
+        snap.forEach(d => {
+          const g = { id: d.id, ...d.data() };
+          const date = timeAgo(g.createdAt);
+          html += `
+            <article class="guide-card fade-in" onclick="window.location.href='guide.html?id=${g.id}'">
+              <div class="guide-card-header">
+                <span class="guide-game-tag">${gamesMap[g.gameId] || 'Jeu'}</span>
+              </div>
+              <h3 class="guide-card-title">${g.title}</h3>
+              <p class="guide-card-preview">${(g.content || '').substring(0, 130)}...</p>
+              <footer class="guide-card-footer">
+                <span class="guide-author">👤 ${g.authorName || 'Anonyme'}</span>
+                <span class="guide-date">${date}</span>
+                <span class="guide-likes">❤ ${g.likesCount || 0}</span>
+              </footer>
+            </article>
+          `;
+        });
+        container.innerHTML = html;
+
+      } catch (err) {
+        console.error("Erreur guides récents :", err);
+        container.innerHTML = `<p class="error-state">Impossible de charger les guides.</p>`;
+      }
+    }
+
+    // ── Stats builds
+    async function loadBuildsStat() {
+      try {
+        const snap = await getDocs(query(collection(db, "builds"), limit(50)));
+        document.getElementById("stat-total-builds").textContent = snap.size < 50 ? snap.size : "50+";
+      } catch(_) {}
+    }
+
+    // ── Lancement
+    loadGames();
+    loadRecentGuides();
+    loadBuildsStat();
+  </script>
+
+</body>
+</html>

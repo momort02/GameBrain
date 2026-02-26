@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscription — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <div class="hero-bg" style="position:fixed; inset:0; z-index:0; pointer-events:none;">
+    <div class="hero-grid"></div>
+    <div class="hero-glow-1"></div>
+    <div class="hero-glow-2" style="top:20%; right:5%;"></div>
+  </div>
+
+  <!-- ==============================
+       📝 PAGE INSCRIPTION
+       ============================== -->
+  <main class="auth-page">
+    <div class="auth-card">
+
+      <a href="index.html" class="auth-logo">
+        <span>🧠</span> GameBrain
+      </a>
+
+      <h1 class="auth-title">Rejoins la communauté</h1>
+      <p class="auth-subtitle">Crée ton compte et commence à partager tes stratégies</p>
+
+      <form id="form-register" novalidate>
+
+        <div class="form-group">
+          <label class="form-label" for="username">
+            Pseudo <span class="required">*</span>
+          </label>
+          <input
+            id="username"
+            type="text"
+            class="form-input"
+            placeholder="MonPseudoGamer"
+            maxlength="30"
+            required
+          />
+          <span class="form-hint">Entre 3 et 30 caractères.</span>
+          <span class="form-error" id="error-username"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">
+            Email <span class="required">*</span>
+          </label>
+          <input
+            id="email"
+            type="email"
+            class="form-input"
+            placeholder="ton@email.com"
+            autocomplete="email"
+            required
+          />
+          <span class="form-error" id="error-email"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">
+            Mot de passe <span class="required">*</span>
+          </label>
+          <div style="position:relative;">
+            <input
+              id="password"
+              type="password"
+              class="form-input"
+              placeholder="Min. 6 caractères"
+              autocomplete="new-password"
+              required
+              style="padding-right: 48px;"
+            />
+            <button
+              type="button"
+              id="toggle-password"
+              style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:1.1rem;"
+              aria-label="Afficher le mot de passe">👁</button>
+          </div>
+
+          <!-- Indicateur de force -->
+          <div id="password-strength" style="margin-top: 6px; display:none;">
+            <div style="display:flex; gap:4px; margin-bottom:3px;">
+              <div class="strength-bar" id="bar1" style="height:3px; flex:1; border-radius:2px; background:var(--border);"></div>
+              <div class="strength-bar" id="bar2" style="height:3px; flex:1; border-radius:2px; background:var(--border);"></div>
+              <div class="strength-bar" id="bar3" style="height:3px; flex:1; border-radius:2px; background:var(--border);"></div>
+              <div class="strength-bar" id="bar4" style="height:3px; flex:1; border-radius:2px; background:var(--border);"></div>
+            </div>
+            <span id="strength-label" style="font-size:0.75rem; color:var(--text-muted);"></span>
+          </div>
+
+          <span class="form-error" id="error-password"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirm-password">
+            Confirmer le mot de passe <span class="required">*</span>
+          </label>
+          <input
+            id="confirm-password"
+            type="password"
+            class="form-input"
+            placeholder="Répète ton mot de passe"
+            autocomplete="new-password"
+            required
+          />
+          <span class="form-error" id="error-confirm"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="btn-submit">
+          🚀 Créer mon compte
+        </button>
+
+      </form>
+
+      <div class="auth-divider">ou</div>
+
+      <div class="auth-footer">
+        Déjà un compte ? <a href="login.html">Se connecter</a>
+      </div>
+
+      <div style="text-align:center; margin-top: var(--gap-md);">
+        <a href="index.html" style="font-size:0.8rem; color:var(--text-muted);">← Retour à l'accueil</a>
+      </div>
+
+    </div>
+  </main>
+
+  <script type="module">
+    import { redirectIfLoggedIn, registerUser } from "./js/auth.js";
+
+    redirectIfLoggedIn();
+
+    // ── Afficher/masquer mot de passe
+    const toggleBtn     = document.getElementById("toggle-password");
+    const passwordInput = document.getElementById("password");
+    toggleBtn?.addEventListener("click", () => {
+      const isVisible    = passwordInput.type === "text";
+      passwordInput.type = isVisible ? "password" : "text";
+      toggleBtn.textContent = isVisible ? "👁" : "🙈";
+    });
+
+    // ── Indicateur de force du mot de passe
+    const bars   = [
+      document.getElementById("bar1"),
+      document.getElementById("bar2"),
+      document.getElementById("bar3"),
+      document.getElementById("bar4"),
+    ];
+    const strengthEl = document.getElementById("password-strength");
+    const strengthLabelEl = document.getElementById("strength-label");
+
+    const COLORS = {
+      weak:   "#ff4466",
+      fair:   "#fbbf24",
+      good:   "#00c8ff",
+      strong: "#00ff9d"
+    };
+
+    passwordInput.addEventListener("input", () => {
+      const val = passwordInput.value;
+      if (!val) { strengthEl.style.display = "none"; return; }
+      strengthEl.style.display = "block";
+
+      let score = 0;
+      if (val.length >= 6)             score++;
+      if (val.length >= 10)            score++;
+      if (/[A-Z]/.test(val))           score++;
+      if (/[0-9!@#$%^&*]/.test(val))   score++;
+
+      const levels  = ["", "Faible", "Correct", "Bien", "Fort"];
+      const colors  = ["", COLORS.weak, COLORS.fair, COLORS.good, COLORS.strong];
+
+      bars.forEach((bar, i) => {
+        bar.style.background = i < score ? colors[score] : "var(--border)";
+      });
+      strengthLabelEl.textContent = levels[score] || "";
+      strengthLabelEl.style.color = colors[score] || "var(--text-muted)";
+    });
+
+    // ── Soumission
+    document.getElementById("form-register").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Reset erreurs
+      ["username", "email", "password", "confirm"].forEach(id => {
+        const el = document.getElementById(`error-${id}`);
+        if (el) el.textContent = "";
+      });
+
+      const username  = document.getElementById("username").value.trim();
+      const email     = document.getElementById("email").value.trim();
+      const password  = document.getElementById("password").value;
+      const confirm   = document.getElementById("confirm-password").value;
+      const btn       = document.getElementById("btn-submit");
+
+      // Validation
+      let valid = true;
+
+      if (!username || username.length < 3) {
+        document.getElementById("error-username").textContent = "Pseudo trop court (min. 3 caractères).";
+        valid = false;
+      }
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        document.getElementById("error-email").textContent = "Email invalide.";
+        valid = false;
+      }
+      if (!password || password.length < 6) {
+        document.getElementById("error-password").textContent = "Mot de passe trop court (min. 6 caractères).";
+        valid = false;
+      }
+      if (password !== confirm) {
+        document.getElementById("error-confirm").textContent = "Les mots de passe ne correspondent pas.";
+        valid = false;
+      }
+      if (!valid) return;
+
+      btn.disabled    = true;
+      btn.textContent = "Création du compte...";
+
+      try {
+        await registerUser(email, password, username);
+      } catch (_) {
+        btn.disabled    = false;
+        btn.textContent = "🚀 Créer mon compte";
+      }
+    });
+  </script>
+
+</body>
+</html>

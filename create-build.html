@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un build — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="create-build.html" class="active">Créer un build</a></li>
+      </ul>
+      <div class="nav-user" id="nav-user" style="display:flex;">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+      <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="container" style="max-width: 700px;">
+
+      <div style="padding: var(--gap-xl) 0 var(--gap-lg);">
+        <a href="dashboard.html" style="color:var(--text-muted); font-size:0.85rem;">← Dashboard</a>
+        <h1 style="margin-top: var(--gap-md);">🔧 Créer un build</h1>
+        <p style="color: var(--text-secondary); margin-top: var(--gap-sm);">
+          Sauvegarde ta configuration ou stratégie dans ton espace personnel.
+        </p>
+      </div>
+
+      <!-- Info privé -->
+      <div style="background: rgba(123, 97, 255, 0.1); border: 1px solid rgba(123, 97, 255, 0.3); border-radius: var(--radius-md); padding: var(--gap-md); margin-bottom: var(--gap-xl);">
+        <p style="color: var(--neon-purple); font-size: 0.875rem;">
+          🔒 <strong>Build privé</strong> — Ce build est uniquement visible par toi.
+        </p>
+      </div>
+
+      <!-- ==============================
+           📝 FORMULAIRE
+           ============================== -->
+      <form id="form-create-build" novalidate>
+
+        <!-- Jeu -->
+        <div class="form-group">
+          <label class="form-label" for="game-select">
+            Jeu <span class="required">*</span>
+          </label>
+          <select id="game-select" class="form-select" required>
+            <option value="">— Choisir un jeu —</option>
+          </select>
+          <span class="form-error" id="error-game"></span>
+        </div>
+
+        <!-- Titre -->
+        <div class="form-group">
+          <label class="form-label" for="build-title">
+            Nom du build <span class="required">*</span>
+          </label>
+          <input
+            id="build-title"
+            type="text"
+            class="form-input"
+            placeholder="Ex: Build diamant ultra-efficace"
+            maxlength="80"
+            required
+          />
+          <span class="form-error" id="error-title"></span>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="build-description">
+            Description / Notes <span class="required">*</span>
+          </label>
+          <textarea
+            id="build-description"
+            class="form-input form-textarea"
+            placeholder="Décris ton build, tes équipements, ta stratégie...&#10;&#10;Ex:&#10;- Épée en diamant enchantée (Tranchant V)&#10;- Armure complète en nétherite&#10;- Stratégie : rush creeper pour la poudre..."
+            maxlength="5000"
+            required
+            style="min-height: 250px;"
+          ></textarea>
+          <div style="text-align:right; font-size:0.75rem; color:var(--text-muted); margin-top:4px;" id="desc-counter">0 / 5000</div>
+          <span class="form-error" id="error-description"></span>
+        </div>
+
+        <!-- Notes privées -->
+        <div class="form-group">
+          <label class="form-label" for="build-notes">
+            Notes privées (optionnel)
+          </label>
+          <textarea
+            id="build-notes"
+            class="form-input form-textarea"
+            placeholder="Tes notes personnelles, rappels, choses à améliorer..."
+            maxlength="2000"
+            style="min-height: 120px;"
+          ></textarea>
+          <p class="form-hint">Ces notes sont 100% privées, uniquement pour toi.</p>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex; gap: var(--gap-md); margin-top: var(--gap-xl); flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary btn-lg" id="btn-submit">
+            💾 Sauvegarder mon build
+          </button>
+          <a href="dashboard.html" class="btn btn-ghost">Annuler</a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { db }                from "./js/firebase-config.js";
+    import { requireAuth, initNavAuth, logoutUser, getUserProfile } from "./js/auth.js";
+    import {
+      collection, query, orderBy, getDocs,
+      addDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { showToast, showLoader, hideLoader } from "./js/main.js";
+
+    const user    = await requireAuth();
+    const profile = await getUserProfile(user.uid);
+
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+
+    document.getElementById("nav-toggle")?.addEventListener("click", () => {
+      document.getElementById("nav-links").classList.toggle("open");
+    });
+
+    // Pré-sélection depuis URL
+    const preGameId = new URLSearchParams(window.location.search).get("gameId");
+
+    // Chargement des jeux
+    async function loadGames() {
+      const select = document.getElementById("game-select");
+      const snap   = await getDocs(query(collection(db, "games"), orderBy("name")));
+      snap.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d.id;
+        opt.textContent = d.data().name;
+        if (preGameId && d.id === preGameId) opt.selected = true;
+        select.appendChild(opt);
+      });
+    }
+    loadGames();
+
+    // Compteur description
+    document.getElementById("build-description")?.addEventListener("input", (e) => {
+      document.getElementById("desc-counter").textContent = `${e.target.value.length} / 5000`;
+    });
+
+    // Soumission
+    document.getElementById("form-create-build").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      ["game", "title", "description"].forEach(id => {
+        const el = document.getElementById(`error-${id}`);
+        if (el) el.textContent = "";
+      });
+
+      const gameId      = document.getElementById("game-select").value;
+      const title       = document.getElementById("build-title").value.trim();
+      const description = document.getElementById("build-description").value.trim();
+      const notes       = document.getElementById("build-notes").value.trim();
+      const btn         = document.getElementById("btn-submit");
+
+      let valid = true;
+      if (!gameId)       { document.getElementById("error-game").textContent        = "Sélectionne un jeu."; valid = false; }
+      if (!title)        { document.getElementById("error-title").textContent       = "Le nom est requis."; valid = false; }
+      if (!description || description.length < 20) {
+        document.getElementById("error-description").textContent = "La description doit faire au moins 20 caractères.";
+        valid = false;
+      }
+      if (!valid) return;
+
+      btn.disabled    = true;
+      btn.textContent = "Sauvegarde en cours...";
+      showLoader();
+
+      try {
+        // Récupérer le nom du jeu
+        const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+        const gameSnap = await getDoc(doc(db, "games", gameId));
+        const gameName = gameSnap.exists() ? gameSnap.data().name : "Jeu";
+
+        await addDoc(collection(db, "builds"), {
+          userId:      user.uid,
+          gameId,
+          gameName,
+          title,
+          description,
+          notes:       notes || "",
+          createdAt:   serverTimestamp()
+        });
+
+        showToast("Build sauvegardé ! 💾", "success");
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        console.error("Erreur build :", err);
+        showToast("Erreur lors de la sauvegarde.", "error");
+        btn.disabled    = false;
+        btn.textContent = "💾 Sauvegarder mon build";
+      } finally {
+        hideLoader();
+      }
+    });
+  </script>
+
+</body>
+</html>

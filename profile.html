@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon Profil — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="profile.html" class="active">Profil</a></li>
+      </ul>
+      <div class="nav-user" id="nav-user" style="display:flex;">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+      <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+
+    <!-- ==============================
+         👤 HERO PROFIL
+         ============================== -->
+    <section class="profile-hero">
+      <div class="container">
+        <div class="profile-avatar">👤</div>
+
+        <h1 class="profile-name gradient-text" id="profile-username">Chargement...</h1>
+
+        <div style="display:flex; gap:var(--gap-sm); justify-content:center; flex-wrap:wrap; margin-top:var(--gap-sm);">
+          <span class="dash-role" id="profile-role">🎮 Joueur</span>
+          <span class="badge-verified" id="profile-verified" style="display:none;">✓ Auteur vérifié</span>
+        </div>
+
+        <p class="profile-email" id="profile-email" style="margin-top:var(--gap-sm);">email@exemple.com</p>
+        <p class="profile-joined" id="profile-joined">Membre depuis ...</p>
+      </div>
+    </section>
+
+    <!-- ==============================
+         📊 STATS DU PROFIL
+         ============================== -->
+    <section class="section">
+      <div class="container">
+
+        <div class="stats-bar" style="max-width:600px; margin: 0 auto var(--gap-2xl);">
+          <div class="stat-card">
+            <span class="stat-number" id="profile-stat-guides">–</span>
+            <span class="stat-label">📖 Guides publiés</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="profile-stat-builds">–</span>
+            <span class="stat-label">🔧 Builds créés</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="profile-stat-favorites">–</span>
+            <span class="stat-label">⭐ Favoris</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="profile-stat-likes">–</span>
+            <span class="stat-label">❤ Likes reçus</span>
+          </div>
+        </div>
+
+        <!-- Mes guides publiés -->
+        <div class="section-header">
+          <h2 class="section-title">Mes guides</h2>
+          <a href="create-guide.html" class="btn btn-primary btn-sm">+ Nouveau guide</a>
+        </div>
+
+        <div class="grid-3" id="profile-guides">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+
+        <!-- Danger zone -->
+        <div style="margin-top: var(--gap-2xl); padding: var(--gap-xl); background: rgba(255,68,102,0.05); border: 1px solid rgba(255,68,102,0.2); border-radius: var(--radius-lg);">
+          <h3 style="color: var(--neon-red); margin-bottom: var(--gap-sm);">⚠ Zone de danger</h3>
+          <p style="color: var(--text-secondary); font-size:0.875rem; margin-bottom: var(--gap-md);">
+            Ces actions sont irréversibles. Procède avec précaution.
+          </p>
+          <button class="btn btn-danger" id="btn-logout-danger">
+            🚪 Se déconnecter
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { db }         from "./js/firebase-config.js";
+    import { requireAuth, initNavAuth, logoutUser, getUserProfile } from "./js/auth.js";
+    import {
+      collection, query, where, orderBy, limit,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { showLoader, hideLoader, formatDate, timeAgo } from "./js/main.js";
+
+    const user    = await requireAuth();
+    const profile = await getUserProfile(user.uid);
+
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click",     () => logoutUser());
+    document.getElementById("btn-logout-danger")?.addEventListener("click",  () => logoutUser());
+
+    document.getElementById("nav-toggle")?.addEventListener("click", () => {
+      document.getElementById("nav-links").classList.toggle("open");
+    });
+    window.addEventListener("scroll", () => {
+      document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
+    });
+
+    // ── Infos profil
+    if (profile) {
+      document.getElementById("profile-username").textContent = profile.username || "Joueur";
+      document.getElementById("profile-email").textContent    = profile.email || "";
+      document.getElementById("profile-role").textContent     = profile.role === "admin" ? "👑 Admin" : "🎮 Joueur";
+      document.getElementById("profile-joined").textContent   = profile.createdAt
+        ? `Membre depuis ${formatDate(profile.createdAt)}`
+        : "";
+
+      if (profile.verified) {
+        document.getElementById("profile-verified").style.display = "inline-flex";
+      }
+    }
+
+    // ── Stats
+    async function loadProfileStats() {
+      showLoader();
+      try {
+        const [guidesSnap, buildsSnap, favsSnap] = await Promise.all([
+          getDocs(query(collection(db, "guides"),    where("authorId", "==", user.uid))),
+          getDocs(query(collection(db, "builds"),    where("userId",   "==", user.uid))),
+          getDocs(query(collection(db, "favorites"), where("userId",   "==", user.uid)))
+        ]);
+
+        document.getElementById("profile-stat-guides").textContent    = guidesSnap.size;
+        document.getElementById("profile-stat-builds").textContent    = buildsSnap.size;
+        document.getElementById("profile-stat-favorites").textContent = favsSnap.size;
+
+        // Total des likes reçus
+        let totalLikes = 0;
+        guidesSnap.forEach(d => { totalLikes += d.data().likesCount || 0; });
+        document.getElementById("profile-stat-likes").textContent = totalLikes;
+
+      } catch (err) {
+        console.error("Erreur stats profil :", err);
+      } finally {
+        hideLoader();
+      }
+    }
+
+    // ── Mes guides publiés
+    async function loadProfileGuides() {
+      const container = document.getElementById("profile-guides");
+      showLoader();
+      try {
+        const [snap, gamesSnap] = await Promise.all([
+          getDocs(query(
+            collection(db, "guides"),
+            where("authorId", "==", user.uid),
+            orderBy("createdAt", "desc"),
+            limit(6)
+          )),
+          getDocs(collection(db, "games"))
+        ]);
+
+        const gamesMap = {};
+        gamesSnap.forEach(d => { gamesMap[d.id] = d.data().name; });
+
+        if (snap.empty) {
+          container.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <div class="empty-icon">📜</div>
+              <p>Tu n'as pas encore publié de guides.</p>
+              <a href="create-guide.html" class="btn btn-primary" style="margin-top:var(--gap-md);">Créer mon premier guide</a>
+            </div>`;
+          return;
+        }
+
+        let html = "";
+        snap.forEach(d => {
+          const g    = { id: d.id, ...d.data() };
+          const date = timeAgo(g.createdAt);
+          html += `
+            <article class="guide-card fade-in" onclick="window.location.href='guide.html?id=${g.id}'">
+              <div class="guide-card-header">
+                <span class="guide-game-tag">${gamesMap[g.gameId] || 'Jeu'}</span>
+                ${g.authorVerified ? '<span class="badge-verified">✓ Vérifié</span>' : ''}
+              </div>
+              <h3 class="guide-card-title">${g.title}</h3>
+              <p class="guide-card-preview">${(g.content || '').substring(0, 120)}...</p>
+              <footer class="guide-card-footer">
+                <span class="guide-date">${date}</span>
+                <span class="guide-likes">❤ ${g.likesCount || 0}</span>
+              </footer>
+            </article>
+          `;
+        });
+        container.innerHTML = html;
+
+      } catch (err) {
+        container.innerHTML = `<p class="error-state">Impossible de charger tes guides.</p>`;
+      } finally {
+        hideLoader();
+      }
+    }
+
+    loadProfileStats();
+    loadProfileGuides();
+  </script>
+
+</body>
+</html>

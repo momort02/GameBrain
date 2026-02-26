@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jeu — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ==============================
+       🧭 NAVIGATION
+       ============================== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="create-guide.html">Créer un guide</a></li>
+      </ul>
+
+      <div class="nav-actions" id="nav-actions">
+        <a href="login.html" class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+      </div>
+      <div class="nav-user" id="nav-user">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+    <div class="container">
+
+      <!-- Fil d'Ariane -->
+      <nav style="padding: var(--gap-lg) 0; font-size:0.85rem; color:var(--text-muted);">
+        <a href="index.html" style="color:var(--text-muted);">Accueil</a>
+        <span style="margin:0 8px;">›</span>
+        <span style="color:var(--text-secondary);" id="breadcrumb-game">Jeu</span>
+      </nav>
+
+      <!-- ==============================
+           🎮 HERO DU JEU
+           ============================== -->
+      <div class="game-hero">
+        <img class="game-hero-image" id="game-image" src="assets/game-placeholder.jpg" alt="Jeu" />
+        <div class="game-hero-content">
+          <h1 id="game-title" class="gradient-text">Chargement...</h1>
+          <p id="game-description" style="color:var(--text-secondary); max-width:600px; margin-top: var(--gap-sm);"></p>
+          <div style="margin-top: var(--gap-lg); display:flex; gap: var(--gap-md); flex-wrap:wrap;">
+            <a href="#" class="btn btn-primary" id="btn-create-guide" hidden>
+              ✍ Créer un guide
+            </a>
+            <a href="create-build.html" class="btn btn-secondary" id="btn-create-build" hidden>
+              🔧 Créer un build
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==============================
+           🔍 CONTRÔLES RECHERCHE / TRI
+           ============================== -->
+      <div class="guides-controls">
+        <div class="search-input-wrapper">
+          <input
+            id="guide-search"
+            type="search"
+            class="form-input"
+            placeholder="Rechercher un guide..."
+          />
+        </div>
+        <select id="guide-sort" class="form-select" style="max-width:200px;">
+          <option value="newest">Plus récents</option>
+          <option value="oldest">Plus anciens</option>
+          <option value="likes">Plus likés</option>
+        </select>
+      </div>
+
+      <!-- ==============================
+           📚 GUIDES
+           ============================== -->
+      <div class="section-header">
+        <h2 class="section-title">Guides disponibles</h2>
+      </div>
+
+      <div class="grid-3" id="guides-container">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+
+      <!-- Bouton charger plus -->
+      <div style="text-align:center; margin-top: var(--gap-xl); display:none;" id="btn-load-more-wrapper">
+        <button id="btn-load-more" class="btn btn-secondary btn-lg">
+          Charger plus de guides
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initNavAuth, logoutUser } from "./js/auth.js";
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+
+    // Mobile nav
+    document.getElementById("nav-toggle")?.addEventListener("click", () => {
+      document.getElementById("nav-links").classList.toggle("open");
+    });
+    window.addEventListener("scroll", () => {
+      document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
+    });
+
+    // Lien "Créer un build" avec gameId
+    import { auth }  from "./js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    const gameId = new URLSearchParams(window.location.search).get("id");
+    onAuthStateChanged(auth, user => {
+      const btnBuild = document.getElementById("btn-create-build");
+      if (user && btnBuild) {
+        btnBuild.href   = `create-build.html?gameId=${gameId}`;
+        btnBuild.hidden = false;
+      }
+    });
+
+    // Bouton charger plus visible
+    document.getElementById("btn-load-more")?.addEventListener("click", () => {
+      document.getElementById("btn-load-more-wrapper").style.display = "none";
+    });
+  </script>
+  <script type="module" src="js/game.js"></script>
+
+</body>
+</html>

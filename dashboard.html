@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ==============================
+       🧭 NAVIGATION
+       ============================== -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="dashboard.html" class="active">Dashboard</a></li>
+        <li><a href="create-guide.html">Créer un guide</a></li>
+        <li><a href="create-build.html">Créer un build</a></li>
+        <li><a href="profile.html">Profil</a></li>
+      </ul>
+
+      <div class="nav-user" id="nav-user" style="display:flex;">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" onclick="window.location.href='profile.html'">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout">Déconnexion</button>
+      </div>
+
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+
+    <!-- ==============================
+         🏠 HEADER DASHBOARD
+         ============================== -->
+    <header class="dashboard-header">
+      <div class="container">
+        <p class="dash-welcome">Bienvenue sur ton espace,</p>
+        <h1 style="font-size: 2rem;">
+          <span class="dash-username" id="dash-username">Joueur</span> 👾
+        </h1>
+        <span class="dash-role" id="dash-role">🎮 Joueur</span>
+
+        <!-- Stats -->
+        <div class="stats-bar" style="margin-top: var(--gap-xl);">
+          <div class="stat-card">
+            <span class="stat-number" id="stat-guides">–</span>
+            <span class="stat-label">📖 Mes guides</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="stat-builds">–</span>
+            <span class="stat-label">🔧 Mes builds</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="stat-favorites">–</span>
+            <span class="stat-label">⭐ Favoris</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==============================
+         📋 CONTENU PRINCIPAL
+         ============================== -->
+    <main class="section">
+      <div class="container">
+
+        <!-- Actions rapides -->
+        <div style="display:flex; gap: var(--gap-md); flex-wrap:wrap; margin-bottom: var(--gap-xl);">
+          <a href="create-guide.html" class="btn btn-primary">✍ Nouveau guide</a>
+          <a href="create-build.html" class="btn btn-secondary">🔧 Nouveau build</a>
+          <a href="index.html"        class="btn btn-outline">🎮 Explorer les jeux</a>
+        </div>
+
+        <!-- Onglets -->
+        <div class="tabs" role="tablist">
+          <button class="tab-btn active" data-tab="recent"    role="tab">📖 Guides récents</button>
+          <button class="tab-btn"        data-tab="builds"    role="tab">🔧 Mes builds</button>
+          <button class="tab-btn"        data-tab="favorites" role="tab">⭐ Mes favoris</button>
+        </div>
+
+        <!-- Panel : Guides récents -->
+        <div class="tab-panel active" id="panel-recent">
+          <div class="section-header">
+            <h2 class="section-title">Guides récents</h2>
+          </div>
+          <div class="grid-3" id="recent-guides">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+
+        <!-- Panel : Mes builds -->
+        <div class="tab-panel" id="panel-builds">
+          <div class="section-header">
+            <h2 class="section-title">Mes builds</h2>
+            <a href="create-build.html" class="btn btn-primary btn-sm">+ Nouveau</a>
+          </div>
+          <div class="grid-3" id="my-builds">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+
+        <!-- Panel : Mes favoris -->
+        <div class="tab-panel" id="panel-favorites">
+          <div class="section-header">
+            <h2 class="section-title">Mes favoris</h2>
+          </div>
+          <div class="grid-3" id="my-favorites">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div><!-- /page-wrapper -->
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/dashboard.js"></script>
+  <script>
+    // Menu mobile
+    document.getElementById("nav-toggle")?.addEventListener("click", () => {
+      document.getElementById("nav-links").classList.toggle("open");
+    });
+    // Navbar scrolled
+    window.addEventListener("scroll", () => {
+      document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
+    });
+  </script>
+
+</body>
+</html>
