@@ -161,6 +161,7 @@ h3 { font-size: clamp(1rem, 2vw, 1.3rem); }
    ────────────────────────────────────────────── */
 .navbar {
   position: fixed;
+  overflow: visible;
   top: 0;
   left: 0;
   right: 0;
@@ -281,25 +282,59 @@ h3 { font-size: clamp(1rem, 2vw, 1.3rem); }
   box-shadow: var(--accent-glow);
 }
 
-/* Hamburger mobile */
+/* ── Hamburger ultra moderne */
 .nav-toggle {
   display: none;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
-  padding: 8px;
-  background: none;
-  border: none;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   flex-shrink: 0;
   margin-left: auto;
+  position: relative;
+  z-index: 1003;
+  transition: all var(--transition-fast);
 }
 
+.nav-toggle:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+/* Les 3 barres */
 .nav-toggle span {
-  width: 22px;
+  position: absolute;
+  width: 18px;
   height: 2px;
   background: var(--text-primary);
   border-radius: 2px;
-  transition: all var(--transition-base);
+  transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-toggle span:nth-child(1) { top: 12px; }
+.nav-toggle span:nth-child(2) { top: 19px; width: 12px; }
+.nav-toggle span:nth-child(3) { top: 26px; }
+
+/* État ouvert → croix animée */
+.nav-toggle.open span:nth-child(1) {
+  top: 19px;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--accent);
+}
+.nav-toggle.open span:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0);
+}
+.nav-toggle.open span:nth-child(3) {
+  top: 19px;
+  transform: translateX(-50%) rotate(-45deg);
+  background: var(--accent);
 }
 
 /* ──────────────────────────────────────────────
@@ -1384,57 +1419,64 @@ h3 { font-size: clamp(1rem, 2vw, 1.3rem); }
 /* ──────────────────────────────────────────────
    📱 Responsive
    ────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .nav-links { display: none; }
+/* Overlay mobile — caché partout par défaut */
+.nav-overlay { display: none; }
 
-  .nav-links.open {
+/* ===============================
+   📱 Mobile Navigation
+   =============================== */
+@media (max-width: 900px) {
+
+  .nav-toggle {
     display: flex;
-    flex-direction: column;
+  }
+
+  .nav-links {
     position: fixed;
     top: 64px;
-    left: 0;
-    right: 0;
+    right: -100%;
+    width: 260px;
+    height: calc(100vh - 64px);
     background: var(--bg-surface);
-    border-bottom: 1px solid var(--border);
-    padding: var(--gap-md);
-    gap: var(--gap-xs);
-    z-index: 999;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: var(--gap-lg);
+    gap: var(--gap-md);
+    transition: right 0.3s ease;
+    border-left: 1px solid var(--border);
+    z-index: 1001;
+    overflow-y: auto;
   }
 
-  .nav-links.open a {
-    display: block;
+  .nav-links.open {
+    right: 0;
+  }
+
+
+
+  .nav-links a {
+    width: 100%;
     padding: 12px var(--gap-md);
+    border-radius: var(--radius-md);
   }
 
-  .nav-toggle { display: flex; }
-
-  .hero-stats {
-    gap: var(--gap-lg);
-    flex-wrap: wrap;
+  .nav-actions {
+    display: none;
   }
 
+  .nav-user {
+    display: none !important;
+  }
+
+  .hero-stats { gap: var(--gap-lg); flex-wrap: wrap; }
   .hero-cta { flex-direction: column; align-items: center; }
-
-  .grid-3, .grid-2 {
-    grid-template-columns: 1fr;
-  }
-
+  .grid-3, .grid-2 { grid-template-columns: 1fr; }
   .guides-controls { flex-direction: column; }
-
   .section-header { flex-direction: column; align-items: flex-start; }
-
   .tabs { flex-wrap: nowrap; overflow-x: auto; }
-
   .stats-bar { grid-template-columns: repeat(3, 1fr); }
-
-  #toast-container {
-    bottom: 12px;
-    right: 12px;
-    left: 12px;
-  }
-
+  #toast-container { bottom: 12px; right: 12px; left: 12px; }
   .toast { min-width: unset; }
-
   .auth-card { padding: var(--gap-lg); }
 }
 

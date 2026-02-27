@@ -89,17 +89,20 @@
       </a>
       <ul class="nav-links" id="nav-links">
         <li><a href="index.html">Accueil</a></li>
+        <li><a href="search.html">🔍 Recherche</a></li>
         <li><a href="dashboard.html">Dashboard</a></li>
-        <li><a href="create-guide.html" class="active">Créer un guide</a></li>
+        <li><a href="create-guide.html" class="active">✍ Créer un guide</a></li>
+        <li><a href="profile.html">👤 Profil</a></li>
       </ul>
       <div class="nav-user" id="nav-user" style="display:flex;">
         <span class="nav-username" id="nav-username">Joueur</span>
-        <div class="nav-avatar" onclick="window.location.href='profile.html'">👤</div>
+        <div class="nav-avatar" id="nav-avatar">👤</div>
         <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
       </div>
       <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
     </div>
   </nav>
+  <div class="nav-overlay" id="nav-overlay"></div>
 
   <div class="page-wrapper">
     <div class="container" style="max-width: 800px;">
@@ -161,6 +164,7 @@
             <button type="button" class="editor-btn" data-insert="`code`">Code</button>
             <button type="button" class="editor-btn" data-insert="---">Séparateur</button>
             <button type="button" class="editor-btn" data-insert="> Citation">Citation</button>
+            <button type="button" class="editor-btn" id="btn-yt-insert" title="Insérer une vidéo YouTube">▶ YouTube</button>
           </div>
           <textarea
             id="guide-content"
@@ -234,8 +238,42 @@
     document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
 
     // Mobile nav
-    document.getElementById("nav-toggle")?.addEventListener("click", () => {
-      document.getElementById("nav-links").classList.toggle("open");
+    const navToggle = document.getElementById("nav-toggle");
+    const navLinks  = document.getElementById("nav-links");
+
+    function openMenu() {
+      navLinks?.classList.add("open");
+      navToggle?.classList.add("open");
+      document.getElementById("nav-overlay")?.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeMenu() {
+      navLinks?.classList.remove("open");
+      navToggle?.classList.remove("open");
+      document.getElementById("nav-overlay")?.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    navToggle?.addEventListener("click", () => {
+      navLinks?.classList.contains("open") ? closeMenu() : openMenu();
+    });
+
+    navLinks?.addEventListener("click", (e) => {
+      if (e.target === navLinks) closeMenu();
+    });
+    document.getElementById("nav-overlay")?.addEventListener("click", closeMenu);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+
+    // Fermer le menu en cliquant sur un lien
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.getElementById("nav-links").classList.remove("open");
+        document.getElementById("nav-toggle").classList.remove("open");
+      });
     });
 
     // ── Pré-sélection jeu depuis URL
@@ -279,6 +317,19 @@
     document.querySelectorAll(".editor-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const textarea = document.getElementById("guide-content");
+
+        // Bouton YouTube spécial
+        if (btn.id === "btn-yt-insert") {
+          const url = prompt("Colle l'URL YouTube :");
+          if (!url) return;
+          const snippet = `[youtube](${url.trim()})`;
+          const start = textarea.selectionStart;
+          textarea.value = textarea.value.substring(0, start) + "\n" + snippet + "\n" + textarea.value.substring(start);
+          textarea.focus();
+          textarea.dispatchEvent(new Event("input"));
+          return;
+        }
+
         const snippet  = btn.dataset.insert;
         const start    = textarea.selectionStart;
         const end      = textarea.selectionEnd;

@@ -173,7 +173,7 @@ function buildGuideCard(guide) {
       <h3 class="guide-card-title">${guide.title}</h3>
       <p class="guide-card-preview">${(guide.content || "").substring(0, 150)}...</p>
       <footer class="guide-card-footer">
-        <span class="guide-author">👤 ${guide.authorName || "Anonyme"}</span>
+        <span class="guide-author" style="cursor:pointer;color:var(--accent);" onclick="event.stopPropagation(); window.location.href='user.html?id=${guide.authorId}'">👤 ${guide.authorName || "Anonyme"}</span>
         <span class="guide-date">${date}</span>
         <div class="guide-actions">
           <button class="btn-like ${guide.userLiked ? "liked" : ""}"

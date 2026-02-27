@@ -179,12 +179,31 @@ export function initNavAuth() {
 
     if (user) {
       // Utilisateur connecté
-      const profile = await getUserProfile(user.uid);
+      const profile  = await getUserProfile(user.uid);
       const username = profile?.username || user.displayName || "Joueur";
+      const photoURL = profile?.photoURL || user.photoURL || null;
 
-      if (navActions)  navActions.style.display  = "none";
-      if (navUser)     navUser.style.display      = "flex";
-      if (navUsername) navUsername.textContent    = username;
+      if (navActions)  navActions.style.display = "none";
+      if (navUser)     navUser.style.display     = "flex";
+      if (navUsername) navUsername.textContent   = username;
+
+      // Mettre à jour l'avatar dans la navbar
+      const navAvatar = document.getElementById("nav-avatar");
+      if (navAvatar) {
+        navAvatar.style.cursor   = "pointer";
+        navAvatar.style.overflow = "hidden";
+        navAvatar.onclick        = () => window.location.href = "profile.html";
+        if (photoURL) {
+          navAvatar.innerHTML = `<img src="${photoURL}" alt="${username}"
+            style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;"
+            onerror="this.parentElement.innerHTML='${username.charAt(0).toUpperCase()}'" />`;
+        } else {
+          navAvatar.textContent   = username.charAt(0).toUpperCase();
+          navAvatar.style.fontSize = "1rem";
+          navAvatar.style.fontWeight = "700";
+          navAvatar.style.color = "var(--accent)";
+        }
+      }
     } else {
       // Visiteur
       if (navActions) navActions.style.display = "flex";
@@ -210,5 +229,3 @@ function translateAuthError(code) {
   };
   return errors[code] || "Une erreur est survenue. Réessaie.";
 }
-
-

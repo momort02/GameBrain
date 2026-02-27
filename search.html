@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recherche — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .search-hero {
+      padding: calc(64px + var(--gap-2xl)) 0 var(--gap-xl);
+      text-align: center;
+    }
+
+    .search-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      margin-bottom: var(--gap-lg);
+    }
+
+    .search-bar-wrapper {
+      position: relative;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      pointer-events: none;
+      color: var(--text-muted);
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 14px 50px 14px 46px;
+      font-size: 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    #search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,200,255,0.12);
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 14px;
+      top: 50%; 
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: none;
+      padding: 4px;
+      line-height: 1;
+    }
+    .clear-btn:hover { color: var(--text-primary); }
+    .clear-btn.visible { display: block; }
+
+    /* Filtres */
+    .search-filters {
+      display: flex;
+      gap: var(--gap-sm);
+      justify-content: center;
+      margin-top: var(--gap-lg);
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn.active {
+      background: var(--accent-dim);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Stats résultats */
+    .results-meta {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: var(--gap-lg);
+    }
+
+    .results-meta strong { color: var(--text-secondary); }
+
+    /* Section résultats */
+    .results-section { margin-bottom: var(--gap-2xl); }
+
+    .results-section-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: var(--gap-md);
+      display: flex;
+      align-items: center;
+      gap: var(--gap-sm);
+    }
+
+    .results-count {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 2px 8px;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+    }
+
+    /* Highlight du mot cherché */
+    .hl { color: var(--accent); font-weight: 700; }
+
+    /* État vide / initial */
+    .search-empty {
+      text-align: center;
+      padding: var(--gap-2xl) 0;
+      color: var(--text-muted);
+    }
+
+    .search-empty-icon { font-size: 3rem; margin-bottom: var(--gap-md); }
+    .search-empty p    { font-size: 0.95rem; }
+
+    /* Game card compact */
+    .game-card-compact {
+      display: flex;
+      align-items: center;
+      gap: var(--gap-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: var(--gap-md);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+    }
+
+    .game-card-compact:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+    }
+
+    .game-thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      background: var(--bg-surface);
+      flex-shrink: 0;
+    }
+
+    .game-thumb-placeholder {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .game-compact-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+    .game-compact-desc { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .grid-games-compact {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--gap-md);
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="search.html" class="active">🔍 Recherche</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="create-guide.html">✍ Créer un guide</a></li>
+        <li><a href="profile.html">👤 Profil</a></li>
+      </ul>
+      <div class="nav-actions" id="nav-actions">
+        <a href="login.html"    class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+      </div>
+      <div class="nav-user" id="nav-user">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" id="nav-avatar">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+      <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+  <div class="nav-overlay" id="nav-overlay"></div>
+
+  <div class="page-wrapper">
+
+    <!-- Hero recherche -->
+    <section class="search-hero">
+      <div class="container">
+        <h1>🔍 Recherche</h1>
+
+        <div class="search-bar-wrapper">
+          <span class="search-icon">🔍</span>
+          <input
+            id="search-input"
+            type="search"
+            placeholder="Jeu, guide, titre..."
+            autocomplete="off"
+            autofocus
+          />
+          <button class="clear-btn" id="clear-btn" onclick="clearSearch()">✕</button>
+        </div>
+
+        <!-- Filtres -->
+        <div class="search-filters">
+          <button class="filter-btn active" data-filter="all"    onclick="setFilter('all')">🌐 Tout</button>
+          <button class="filter-btn"        data-filter="games"  onclick="setFilter('games')">🎮 Jeux</button>
+          <button class="filter-btn"        data-filter="guides" onclick="setFilter('guides')">📖 Guides</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Résultats -->
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+
+        <div id="results-meta" class="results-meta" style="display:none;"></div>
+        <div id="results-container"></div>
+
+        <!-- État initial -->
+        <div class="search-empty" id="state-initial">
+          <div class="search-empty-icon">🎮</div>
+          <p>Tape le nom d'un jeu ou d'un guide pour commencer.</p>
+        </div>
+
+        <!-- Aucun résultat -->
+        <div class="search-empty" id="state-empty" style="display:none;">
+          <div class="search-empty-icon">😶</div>
+          <p>Aucun résultat pour <strong id="empty-keyword"></strong>.</p>
+          <p style="margin-top:8px; font-size:0.8rem;">Essaie avec d'autres mots.</p>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { db }       from "./js/firebase-config.js";
+    import { initNavAuth, logoutUser } from "./js/auth.js";
+    import {
+      collection, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { timeAgo } from "./js/main.js";
+
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+    const navToggle = document.getElementById("nav-toggle");
+    const navLinks  = document.getElementById("nav-links");
+
+    function openMenu() {
+      navLinks?.classList.add("open");
+      navToggle?.classList.add("open");
+      document.getElementById("nav-overlay")?.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeMenu() {
+      navLinks?.classList.remove("open");
+      navToggle?.classList.remove("open");
+      document.getElementById("nav-overlay")?.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    navToggle?.addEventListener("click", () => {
+      navLinks?.classList.contains("open") ? closeMenu() : openMenu();
+    });
+
+    navLinks?.addEventListener("click", (e) => {
+      if (e.target === navLinks) closeMenu();
+    });
+    document.getElementById("nav-overlay")?.addEventListener("click", closeMenu);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+
+    // Fermer le menu en cliquant sur un lien
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.getElementById("nav-links").classList.remove("open");
+        document.getElementById("nav-toggle").classList.remove("open");
+      });
+    });
+    window.addEventListener("scroll", () => {
+      document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
+    });
+
+    // ──────────────────────────────────────────────
+    // État
+    // ──────────────────────────────────────────────
+    let allGames  = [];
+    let allGuides = [];
+    let allUsers  = {};
+    let currentFilter = "all";
+    let debounceTimer;
+
+    // ──────────────────────────────────────────────
+    // Chargement initial de toutes les données
+    // ──────────────────────────────────────────────
+    async function loadData() {
+      const [gamesSnap, guidesSnap, usersSnap] = await Promise.all([
+        getDocs(collection(db, "games")),
+        getDocs(collection(db, "guides")),
+        getDocs(collection(db, "users"))
+      ]);
+
+      gamesSnap.forEach(d  => allGames.push({ id: d.id, ...d.data() }));
+      guidesSnap.forEach(d => allGuides.push({ id: d.id, ...d.data() }));
+      usersSnap.forEach(d  => { allUsers[d.id] = d.data(); });
+    }
+
+    loadData();
+
+    // ──────────────────────────────────────────────
+    // Recherche
+    // ──────────────────────────────────────────────
+    document.getElementById("search-input").addEventListener("input", (e) => {
+      const kw = e.target.value.trim();
+      document.getElementById("clear-btn").classList.toggle("visible", kw.length > 0);
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => runSearch(kw), 250);
+    });
+
+    // Si query dans l'URL (?q=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlQuery  = urlParams.get("q");
+    if (urlQuery) {
+      document.getElementById("search-input").value = urlQuery;
+      document.getElementById("clear-btn").classList.add("visible");
+      // Attendre que les données soient chargées
+      setTimeout(() => runSearch(urlQuery), 800);
+    }
+
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.filter === f);
+      });
+      const kw = document.getElementById("search-input").value.trim();
+      if (kw) runSearch(kw);
+    }
+    window.setFilter = setFilter;
+
+    window.clearSearch = function() {
+      document.getElementById("search-input").value = "";
+      document.getElementById("clear-btn").classList.remove("visible");
+      document.getElementById("results-container").innerHTML = "";
+      document.getElementById("results-meta").style.display = "none";
+      document.getElementById("state-initial").style.display = "block";
+      document.getElementById("state-empty").style.display   = "none";
+    };
+
+    // ──────────────────────────────────────────────
+    // Highlight du mot-clé
+    // ──────────────────────────────────────────────
+    function highlight(text, kw) {
+      if (!kw) return text;
+      const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return text.replace(new RegExp(`(${escaped})`, "gi"), '<span class="hl">$1</span>');
+    }
+
+    // ──────────────────────────────────────────────
+    // Lancer la recherche
+    // ──────────────────────────────────────────────
+    function runSearch(kw) {
+      if (!kw) { window.clearSearch(); return; }
+
+      const kwLow = kw.toLowerCase();
+
+      // Filtrer jeux
+      const matchedGames = allGames.filter(g =>
+        g.name?.toLowerCase().includes(kwLow) ||
+        g.description?.toLowerCase().includes(kwLow)
+      );
+
+      // Filtrer guides
+      const matchedGuides = allGuides.filter(g =>
+        g.title?.toLowerCase().includes(kwLow) ||
+        g.content?.toLowerCase().includes(kwLow) ||
+        g.authorName?.toLowerCase().includes(kwLow)
+      );
+
+      const total = matchedGames.length + matchedGuides.length;
+
+      // Masquer états
+      document.getElementById("state-initial").style.display = "none";
+      document.getElementById("state-empty").style.display   = "none";
+      document.getElementById("results-container").innerHTML  = "";
+
+      if (total === 0) {
+        document.getElementById("results-meta").style.display   = "none";
+        document.getElementById("state-empty").style.display    = "block";
+        document.getElementById("empty-keyword").textContent    = `"${kw}"`;
+        return;
+      }
+
+      // Meta
+      const meta = document.getElementById("results-meta");
+      meta.style.display = "block";
+      meta.innerHTML     = `<strong>${total}</strong> résultat${total > 1 ? "s" : ""} pour <strong>"${kw}"</strong>`;
+
+      const container = document.getElementById("results-container");
+
+      // ── Section JEUX
+      if ((currentFilter === "all" || currentFilter === "games") && matchedGames.length > 0) {
+        const section = document.createElement("div");
+        section.className = "results-section";
+        section.innerHTML = `
+          <div class="results-section-title">
+            🎮 Jeux
+            <span class="results-count">${matchedGames.length}</span>
+          </div>
+          <div class="grid-games-compact">
+            ${matchedGames.map(g => `
+              <a class="game-card-compact" href="game.html?id=${g.id}">
+                ${g.image
+                  ? `<img class="game-thumb" src="${g.image}" alt="${g.name}" onerror="this.style.display='none'" />`
+                  : `<div class="game-thumb-placeholder">🎮</div>`
+                }
+                <div style="min-width:0;">
+                  <div class="game-compact-name">${highlight(g.name || "", kw)}</div>
+                  <div class="game-compact-desc">${highlight((g.description || "").substring(0, 70), kw)}</div>
+                </div>
+              </a>
+            `).join("")}
+          </div>`;
+        container.appendChild(section);
+      }
+
+      // ── Section GUIDES
+      if ((currentFilter === "all" || currentFilter === "guides") && matchedGuides.length > 0) {
+        // Trouver le nom du jeu
+        const gamesMap = {};
+        allGames.forEach(g => { gamesMap[g.id] = g.name; });
+
+        const section = document.createElement("div");
+        section.className = "results-section";
+        section.innerHTML = `
+          <div class="results-section-title">
+            📖 Guides
+            <span class="results-count">${matchedGuides.length}</span>
+          </div>
+          <div class="grid-3">
+            ${matchedGuides.map(g => `
+              <article class="guide-card fade-in" onclick="window.location.href='guide.html?id=${g.id}'">
+                <div class="guide-card-header">
+                  <span class="guide-game-tag">${gamesMap[g.gameId] || "Jeu"}</span>
+                  ${g.authorVerified ? '<span class="badge-verified">✓</span>' : ""}
+                </div>
+                <h3 class="guide-card-title">${highlight(g.title || "", kw)}</h3>
+                <p class="guide-card-preview">${highlight((g.content || "").substring(0, 130), kw)}...</p>
+                <footer class="guide-card-footer">
+                  <span class="guide-author">👤 ${highlight(g.authorName || "Anonyme", kw)}</span>
+                  <span class="guide-likes">❤ ${g.likesCount || 0}</span>
+                </footer>
+              </article>
+            `).join("")}
+          </div>`;
+        container.appendChild(section);
+      }
+
+      // Si filtre actif mais aucun résultat dans cette catégorie
+      if (
+        (currentFilter === "games"  && matchedGames.length  === 0) ||
+        (currentFilter === "guides" && matchedGuides.length === 0)
+      ) {
+        document.getElementById("results-meta").style.display = "none";
+        document.getElementById("state-empty").style.display  = "block";
+        document.getElementById("empty-keyword").textContent  = `"${kw}"`;
+      }
+    }
+  </script>
+
+</body>
+</html>

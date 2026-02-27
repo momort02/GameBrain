@@ -22,8 +22,10 @@
 
       <ul class="nav-links" id="nav-links">
         <li><a href="index.html">Accueil</a></li>
+        <li><a href="search.html">🔍 Recherche</a></li>
         <li><a href="dashboard.html">Dashboard</a></li>
-        <li><a href="create-guide.html">Créer un guide</a></li>
+        <li><a href="create-guide.html">✍ Créer un guide</a></li>
+        <li><a href="profile.html">👤 Profil</a></li>
       </ul>
 
       <div class="nav-actions" id="nav-actions">
@@ -32,7 +34,7 @@
       </div>
       <div class="nav-user" id="nav-user">
         <span class="nav-username" id="nav-username">Joueur</span>
-        <div class="nav-avatar" onclick="window.location.href='profile.html'">👤</div>
+        <div class="nav-avatar" id="nav-avatar">👤</div>
         <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
       </div>
 
@@ -41,6 +43,7 @@
       </button>
     </div>
   </nav>
+  <div class="nav-overlay" id="nav-overlay"></div>
 
   <div class="page-wrapper">
     <div class="container">
@@ -131,8 +134,42 @@
     document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
 
     // Mobile nav
-    document.getElementById("nav-toggle")?.addEventListener("click", () => {
-      document.getElementById("nav-links").classList.toggle("open");
+    const navToggle = document.getElementById("nav-toggle");
+    const navLinks  = document.getElementById("nav-links");
+
+    function openMenu() {
+      navLinks?.classList.add("open");
+      navToggle?.classList.add("open");
+      document.getElementById("nav-overlay")?.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeMenu() {
+      navLinks?.classList.remove("open");
+      navToggle?.classList.remove("open");
+      document.getElementById("nav-overlay")?.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    navToggle?.addEventListener("click", () => {
+      navLinks?.classList.contains("open") ? closeMenu() : openMenu();
+    });
+
+    navLinks?.addEventListener("click", (e) => {
+      if (e.target === navLinks) closeMenu();
+    });
+    document.getElementById("nav-overlay")?.addEventListener("click", closeMenu);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+
+    // Fermer le menu en cliquant sur un lien
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.getElementById("nav-links").classList.remove("open");
+        document.getElementById("nav-toggle").classList.remove("open");
+      });
     });
     window.addEventListener("scroll", () => {
       document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);

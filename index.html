@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="GameBrain — La plateforme intelligente pour gamers. Stratégies, builds et guides pour Minecraft, Zelda BOTW, Sons of the Forest." />
-  <link rel="SHORTCUT ICON" href="assets/logo.jpg"
   <title>GameBrain — Plateforme Gaming Intelligente</title>
 
   <!-- Google Fonts -->
@@ -30,9 +29,10 @@
       <!-- Liens desktop -->
       <ul class="nav-links" id="nav-links">
         <li><a href="index.html" class="active">Accueil</a></li>
+        <li><a href="search.html">🔍 Recherche</a></li>
         <li><a href="dashboard.html">Dashboard</a></li>
-        <li><a href="create-guide.html">Créer un guide</a></li>
-        <li><a href="profile.html">Profil</a></li>
+        <li><a href="create-guide.html">✍ Créer un guide</a></li>
+        <li><a href="profile.html">👤 Profil</a></li>
       </ul>
 
       <!-- Actions non connecté -->
@@ -44,7 +44,7 @@
       <!-- Utilisateur connecté -->
       <div class="nav-user" id="nav-user">
         <span class="nav-username" id="nav-username">Joueur</span>
-        <div class="nav-avatar" onclick="window.location.href='profile.html'" title="Mon profil">👤</div>
+        <div class="nav-avatar" id="nav-avatar">👤</div>
         <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
       </div>
 
@@ -54,6 +54,7 @@
       </button>
     </div>
   </nav>
+  <div class="nav-overlay" id="nav-overlay"></div>
 
   <!-- ==============================
        🏠 HERO SECTION
@@ -72,7 +73,8 @@
         </div>
 
         <h1 class="hero-title">
-          La base de connaissances gaming construite par les joueurs, pour les joueurs.
+          La base de connaissances gaming construite par les joueurs, <br>
+          <span class="gradient-text">pour les joueurs.</span>
         </h1>
 
         <p class="hero-subtitle">
@@ -118,7 +120,22 @@
           <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 4px;">Explorez</p>
           <h2 class="section-title">Jeux disponibles</h2>
         </div>
-        <a href="#" class="btn btn-outline btn-sm" id="btn-view-all-games">Voir tout</a>
+        <button class="btn btn-outline btn-sm" id="btn-voir-tout" onclick="voirTout()" style="display:none;">
+          Voir tout ↓
+        </button>
+      </div>
+
+      <!-- Barre de recherche jeux -->
+      <div style="position:relative; max-width:360px; margin-bottom: var(--gap-xl);">
+        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); pointer-events:none;">🔍</span>
+        <input
+          id="game-search"
+          type="search"
+          placeholder="Rechercher un jeu..."
+          class="form-input"
+          style="padding-left:38px;"
+          oninput="filterGames(this.value)"
+        />
       </div>
 
       <!-- Grille des jeux — chargée dynamiquement -->
@@ -245,14 +262,36 @@
 
     // ── Navbar scrolled
     const navbar = document.getElementById("navbar");
+        // ── Menu mobile
+    const _toggle = document.getElementById("nav-toggle");
+    const _links  = document.getElementById("nav-links");
+
+    function closeMenu() {
+      _links?.classList.remove("open");
+      _toggle?.classList.remove("open");
+    }
+    function openMenu() {
+      _links?.classList.add("open");
+      _toggle?.classList.add("open");
+    }
+
+    _toggle?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      _links?.classList.contains("open") ? closeMenu() : openMenu();
+    });
+    document.querySelectorAll("#nav-links a").forEach(l => l.addEventListener("click", closeMenu));
+    document.addEventListener("click", (e) => {
+      if (_links?.classList.contains("open") && !_links.contains(e.target) && e.target !== _toggle) closeMenu();
+    });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
+
     window.addEventListener("scroll", () => {
       navbar.classList.toggle("scrolled", window.scrollY > 30);
     });
 
-    // ── Menu mobile
-    document.getElementById("nav-toggle")?.addEventListener("click", () => {
-      document.getElementById("nav-links").classList.toggle("open");
-    });
+    
+
+    
 
     // ── Chargement des jeux depuis Firestore
     async function loadGames() {
@@ -260,7 +299,7 @@
       showLoader();
       try {
         const snap = await getDocs(
-          query(collection(db, "games"), orderBy("name"), limit(6))
+          query(collection(db, "games"), orderBy("name"))
         );
 
         // Stat jeux
@@ -271,29 +310,11 @@
           return;
         }
 
-        let html = "";
-        snap.forEach(d => {
-          const g = d.data();
-          html += `
-            <article class="game-card fade-in" onclick="window.location.href='game.html?id=${d.id}'">
-              <div class="game-card-image-wrapper">
-                <img class="game-card-image"
-                     src="${g.image || 'assets/game-placeholder.jpg'}"
-                     alt="${g.name}"
-                     onerror="this.src='assets/game-placeholder.jpg'" />
-              </div>
-              <div class="game-card-body">
-                <h3 class="game-card-title">${g.name}</h3>
-                <p class="game-card-desc">${(g.description || '').substring(0, 100)}...</p>
-                <div class="game-card-footer">
-                  <span class="game-guides-count">📖 Guides</span>
-                  <a href="game.html?id=${d.id}" class="btn btn-primary btn-sm">Explorer →</a>
-                </div>
-              </div>
-            </article>
-          `;
-        });
-        grid.innerHTML = html;
+        // Stocker tous les jeux pour la recherche côté client
+        window._allGames = [];
+        snap.forEach(d => window._allGames.push({ id: d.id, ...d.data() }));
+
+        renderGames(window._allGames);
 
       } catch (err) {
         console.error("Erreur jeux :", err);
@@ -302,6 +323,74 @@
         hideLoader();
       }
     }
+
+    // ── Rendu de la grille des jeux
+    const PAGE_GAMES   = 9;
+    let   showAllGames = false;
+
+    function buildGameCard(g) {
+      return `
+        <article class="game-card fade-in" onclick="window.location.href='game.html?id=${g.id}'">
+          <div class="game-card-image-wrapper">
+            <img class="game-card-image"
+                 src="${g.image || 'assets/game-placeholder.jpg'}"
+                 alt="${g.name}"
+                 onerror="this.src='assets/game-placeholder.jpg'" />
+          </div>
+          <div class="game-card-body">
+            <h3 class="game-card-title">${g.name}</h3>
+            <p class="game-card-desc">${(g.description || '').substring(0, 100)}...</p>
+            <div class="game-card-footer">
+              <span class="game-guides-count">📖 Guides</span>
+              <a href="game.html?id=${g.id}" class="btn btn-primary btn-sm">Explorer →</a>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function renderGames(games) {
+      const grid    = document.getElementById("games-grid");
+      const btnVoir = document.getElementById("btn-voir-tout");
+
+      if (!games.length) {
+        grid.innerHTML = `<p class="empty-state" style="grid-column:1/-1;">Aucun jeu trouvé pour "<em>${document.getElementById("game-search")?.value}</em>".</p>`;
+        if (btnVoir) btnVoir.style.display = "none";
+        return;
+      }
+
+      const isSearching = document.getElementById("game-search")?.value.trim().length > 0;
+
+      // Si on cherche → tout afficher sans limite
+      const toShow = (showAllGames || isSearching) ? games : games.slice(0, PAGE_GAMES);
+      grid.innerHTML = toShow.map(buildGameCard).join("");
+
+      // Bouton "Voir tout" visible seulement si +9 jeux et pas en recherche et pas déjà tout affiché
+      if (btnVoir) {
+        if (!isSearching && !showAllGames && games.length > PAGE_GAMES) {
+          btnVoir.style.display  = "inline-flex";
+          btnVoir.textContent    = `Voir tout (${games.length}) ↓`;
+        } else {
+          btnVoir.style.display  = "none";
+        }
+      }
+    }
+
+    // ── Voir tout
+    window.voirTout = function() {
+      showAllGames = true;
+      renderGames(window._allGames);
+    };
+
+    // ── Filtre par nom (recherche côté client)
+    window.filterGames = function(keyword) {
+      if (!window._allGames) return;
+      showAllGames = false; // reset si nouvelle recherche
+      const kw      = keyword.trim().toLowerCase();
+      const filtered = kw
+        ? window._allGames.filter(g => g.name.toLowerCase().includes(kw))
+        : window._allGames;
+      renderGames(filtered);
+    };
 
     // ── Guides récents
     async function loadRecentGuides() {
@@ -316,8 +405,10 @@
         );
 
         // Stat guides
-        document.getElementById("stat-total-guides").textContent = snap.size < 6 ? snap.size : "50+";
-
+        const countSnap = await getCountFromServer(collection(db, "guides"));
+document.getElementById("stat-total-guides").textContent =
+  countSnap.data().count;
+        
         if (snap.empty) {
           container.innerHTML = `<p class="empty-state">Aucun guide pour le moment.</p>`;
           return;

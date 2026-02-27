@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil — GameBrain</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .profile-hero {
+      padding: calc(64px + var(--gap-2xl)) 0 var(--gap-xl);
+      text-align: center;
+    }
+
+    .profile-avatar-placeholder {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 24px rgba(0,200,255,0.3);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto var(--gap-lg);
+    }
+
+    .profile-avatar-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 24px rgba(0,200,255,0.3);
+      display: none;
+      margin: 0 auto var(--gap-lg);
+    }
+
+    .profile-name {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 900;
+      margin-bottom: var(--gap-sm);
+    }
+
+    .profile-bio {
+      color: var(--text-secondary);
+      font-size: 0.925rem;
+      max-width: 480px;
+      margin: var(--gap-md) auto 0;
+      line-height: 1.6;
+    }
+
+    .profile-joined { color: var(--text-muted); font-size: 0.8rem; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="search.html">🔍 Recherche</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="create-guide.html">✍ Créer un guide</a></li>
+        <li><a href="profile.html">👤 Profil</a></li>
+      </ul>
+      <div class="nav-actions" id="nav-actions">
+        <a href="login.html"    class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="register.html" class="btn btn-primary btn-sm">S'inscrire</a>
+      </div>
+      <div class="nav-user" id="nav-user">
+        <span class="nav-username" id="nav-username">Joueur</span>
+        <div class="nav-avatar" id="nav-avatar">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+      <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+  <div class="nav-overlay" id="nav-overlay"></div>
+
+  <div class="page-wrapper">
+
+    <!-- Hero -->
+    <section class="profile-hero">
+      <div class="container">
+
+        <div id="profile-avatar-placeholder" class="profile-avatar-placeholder">👤</div>
+        <img  id="profile-avatar-img" class="profile-avatar-img" alt="Avatar"
+              onerror="this.style.display='none'; document.getElementById('profile-avatar-placeholder').style.display='flex';" />
+
+        <h1 class="profile-name gradient-text" id="profile-username">Chargement...</h1>
+
+        <div style="display:flex; gap:var(--gap-sm); justify-content:center; flex-wrap:wrap; margin-top:var(--gap-sm);">
+          <span class="dash-role"     id="profile-role">🎮 Joueur</span>
+          <span class="badge-verified" id="profile-verified" style="display:none;">✓ Auteur vérifié</span>
+        </div>
+
+        <p class="profile-bio"   id="profile-bio"   style="display:none;"></p>
+        <p class="profile-joined" id="profile-joined"></p>
+
+      </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="section" style="padding-top:0;">
+      <div class="container">
+
+        <div class="stats-bar" style="max-width:500px; margin: 0 auto var(--gap-2xl);">
+          <div class="stat-card">
+            <span class="stat-number" id="stat-guides">–</span>
+            <span class="stat-label">📖 Guides</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-number" id="stat-likes">–</span>
+            <span class="stat-label">❤ Likes reçus</span>
+          </div>
+
+        </div>
+
+        <!-- Guides publiés -->
+        <div class="section-header" style="margin-bottom:var(--gap-lg);">
+          <h2 class="section-title" id="guides-section-title">Guides publiés</h2>
+        </div>
+
+        <div class="grid-3" id="guides-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+
+        <!-- Lien retour -->
+        <div style="text-align:center; margin-top:var(--gap-2xl);">
+          <a href="index.html" class="btn btn-ghost">← Retour à l'accueil</a>
+        </div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { db }       from "./js/firebase-config.js";
+    import { initNavAuth, logoutUser } from "./js/auth.js";
+    import {
+      doc, getDoc, collection, query, where, getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { showLoader, hideLoader, formatDate, timeAgo } from "./js/main.js";
+
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+    const navToggle = document.getElementById("nav-toggle");
+    const navLinks  = document.getElementById("nav-links");
+
+    function openMenu() {
+      navLinks?.classList.add("open");
+      navToggle?.classList.add("open");
+      document.getElementById("nav-overlay")?.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeMenu() {
+      navLinks?.classList.remove("open");
+      navToggle?.classList.remove("open");
+      document.getElementById("nav-overlay")?.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    navToggle?.addEventListener("click", () => {
+      navLinks?.classList.contains("open") ? closeMenu() : openMenu();
+    });
+
+    navLinks?.addEventListener("click", (e) => {
+      if (e.target === navLinks) closeMenu();
+    });
+    document.getElementById("nav-overlay")?.addEventListener("click", closeMenu);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+
+    // Fermer le menu en cliquant sur un lien
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.getElementById("nav-links").classList.remove("open");
+        document.getElementById("nav-toggle").classList.remove("open");
+      });
+    });
+    window.addEventListener("scroll", () => {
+      document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
+    });
+
+    // Récupérer l'UID depuis l'URL
+    const params = new URLSearchParams(window.location.search);
+    const uid    = params.get("id");
+
+    if (!uid) { window.location.href = "index.html"; }
+
+    // Wrappé dans async pour éviter les erreurs de top-level await
+    async function loadUserProfile() {
+    showLoader();
+    try {
+      // Charger le profil utilisateur
+      const userSnap = await getDoc(doc(db, "users", uid));
+
+      if (!userSnap.exists()) {
+        document.getElementById("profile-username").textContent = "Utilisateur introuvable";
+        hideLoader();
+        return;
+      }
+
+      const p = userSnap.data();
+      document.title = `${p.username || "Joueur"} — GameBrain`;
+
+      // Avatar
+      if (p.photoURL) {
+        const img = document.getElementById("profile-avatar-img");
+        img.src = p.photoURL;
+        img.style.display = "block";
+        document.getElementById("profile-avatar-placeholder").style.display = "none";
+      }
+
+      // Infos
+      document.getElementById("profile-username").textContent = p.username || "Joueur";
+      document.getElementById("profile-role").textContent     = p.role === "admin" ? "👑 Admin" : "🎮 Joueur";
+
+      if (p.verified) document.getElementById("profile-verified").style.display = "inline-flex";
+
+      if (p.bio) {
+        const bioEl = document.getElementById("profile-bio");
+        bioEl.textContent   = p.bio;
+        bioEl.style.display = "block";
+      }
+
+      if (p.createdAt) {
+        document.getElementById("profile-joined").textContent = `Membre depuis ${formatDate(p.createdAt)}`;
+      }
+
+      // Charger guides + stats en parallèle
+      const [guidesSnap, gamesSnap] = await Promise.all([
+        getDocs(query(collection(db, "guides"), where("authorId", "==", uid))),
+        getDocs(collection(db, "games"))
+      ]);
+
+      // Stats
+      let totalLikes = 0;
+      guidesSnap.forEach(d => { totalLikes += d.data().likesCount || 0; });
+
+      document.getElementById("stat-guides").textContent = guidesSnap.size;
+      document.getElementById("stat-likes").textContent  = totalLikes;
+
+      // Titre section
+      document.getElementById("guides-section-title").textContent =
+        `Guides de ${p.username || "ce joueur"} (${guidesSnap.size})`;
+
+      // Grille des guides
+      const grid     = document.getElementById("guides-grid");
+      const gamesMap = {};
+      gamesSnap.forEach(d => { gamesMap[d.id] = d.data().name; });
+
+      if (guidesSnap.empty) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="empty-icon">📜</div>
+            <p>Aucun guide publié pour l'instant.</p>
+          </div>`;
+      } else {
+        const guides = [];
+        guidesSnap.forEach(d => guides.push({ id: d.id, ...d.data() }));
+        guides.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+
+        grid.innerHTML = guides.map(g => `
+          <article class="guide-card fade-in" onclick="window.location.href='guide.html?id=${g.id}'">
+            <div class="guide-card-header">
+              <span class="guide-game-tag">${gamesMap[g.gameId] || 'Jeu'}</span>
+              ${g.authorVerified ? '<span class="badge-verified">✓ Vérifié</span>' : ''}
+            </div>
+            <h3 class="guide-card-title">${g.title}</h3>
+            <p class="guide-card-preview">${(g.content || '').substring(0, 120)}...</p>
+            <footer class="guide-card-footer">
+              <span class="guide-date">${timeAgo(g.createdAt)}</span>
+              <span class="guide-likes">❤ ${g.likesCount || 0}</span>
+            </footer>
+          </article>
+        `).join("");
+      }
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("profile-username").textContent = "Erreur de chargement";
+    } finally {
+      hideLoader();
+    }
+    } // end loadUserProfile
+
+    loadUserProfile();
+  </script>
+
+</body>
+</html>

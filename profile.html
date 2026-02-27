@@ -7,10 +7,156 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Hero profil */
+    .profile-hero {
+      padding: calc(64px + var(--gap-2xl)) 0 var(--gap-xl);
+      text-align: center;
+      position: relative;
+    }
+
+    .profile-avatar-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-bottom: var(--gap-lg);
+    }
+
+    .profile-avatar-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 24px rgba(0,200,255,0.3);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+
+    .profile-avatar-placeholder {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 24px rgba(0,200,255,0.3);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      margin: 0 auto;
+    }
+
+    .profile-name {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 900;
+      margin-bottom: var(--gap-sm);
+    }
+
+    .profile-bio {
+      color: var(--text-secondary);
+      font-size: 0.925rem;
+      max-width: 480px;
+      margin: var(--gap-md) auto 0;
+      line-height: 1.6;
+    }
+
+    .profile-email  { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+    .profile-joined { color: var(--text-muted); font-size: 0.8rem; margin-top: 4px; }
+
+    /* ── Bouton édition */
+    .btn-edit-profile {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: var(--gap-lg);
+      padding: 8px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .btn-edit-profile:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: var(--gap-lg);
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--gap-xl);
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--gap-xl);
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      padding: 4px;
+      transition: color var(--transition-fast);
+    }
+    .btn-close:hover { color: var(--text-primary); }
+
+    /* ── Preview avatar dans le modal */
+    .avatar-preview {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      background: var(--bg-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+
+    .char-counter {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+    .char-counter.warn { color: #fbbf24; }
+  </style>
 </head>
 <body>
 
-  <!-- Navbar -->
+  <!-- ==============================
+       🧭 NAVBAR
+       ============================== -->
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
       <a href="index.html" class="nav-logo">
@@ -19,17 +165,20 @@
       </a>
       <ul class="nav-links" id="nav-links">
         <li><a href="index.html">Accueil</a></li>
+        <li><a href="search.html">🔍 Recherche</a></li>
         <li><a href="dashboard.html">Dashboard</a></li>
-        <li><a href="profile.html" class="active">Profil</a></li>
+        <li><a href="create-guide.html">✍ Créer un guide</a></li>
+        <li><a href="profile.html" class="active">👤 Profil</a></li>
       </ul>
       <div class="nav-user" id="nav-user" style="display:flex;">
         <span class="nav-username" id="nav-username">Joueur</span>
-        <div class="nav-avatar">👤</div>
+        <div class="nav-avatar" id="nav-avatar">👤</div>
         <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
       </div>
       <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
     </div>
   </nav>
+  <div class="nav-overlay" id="nav-overlay"></div>
 
   <div class="page-wrapper">
 
@@ -38,34 +187,53 @@
          ============================== -->
     <section class="profile-hero">
       <div class="container">
-        <div class="profile-avatar">👤</div>
 
+        <!-- Avatar -->
+        <div class="profile-avatar-wrapper">
+          <div class="profile-avatar-placeholder" id="profile-avatar-placeholder">👤</div>
+          <img id="profile-avatar-img" src="" alt="Avatar"
+               class="profile-avatar-img"
+               style="display:none; margin:0 auto;"
+               onerror="this.style.display='none'; document.getElementById('profile-avatar-placeholder').style.display='flex';" />
+        </div>
+
+        <!-- Nom -->
         <h1 class="profile-name gradient-text" id="profile-username">Chargement...</h1>
 
+        <!-- Badges -->
         <div style="display:flex; gap:var(--gap-sm); justify-content:center; flex-wrap:wrap; margin-top:var(--gap-sm);">
           <span class="dash-role" id="profile-role">🎮 Joueur</span>
           <span class="badge-verified" id="profile-verified" style="display:none;">✓ Auteur vérifié</span>
         </div>
 
-        <p class="profile-email" id="profile-email" style="margin-top:var(--gap-sm);">email@exemple.com</p>
+        <!-- Bio -->
+        <p class="profile-bio" id="profile-bio"></p>
+
+        <p class="profile-email"  id="profile-email">–</p>
         <p class="profile-joined" id="profile-joined">Membre depuis ...</p>
+
+        <!-- Bouton modifier -->
+        <button class="btn-edit-profile" onclick="openEditModal()">
+          ✏️ Modifier mon profil
+        </button>
+
       </div>
     </section>
 
     <!-- ==============================
-         📊 STATS DU PROFIL
+         📊 STATS
          ============================== -->
-    <section class="section">
+    <section class="section" style="padding-top:0;">
       <div class="container">
 
-        <div class="stats-bar" style="max-width:600px; margin: 0 auto var(--gap-2xl);">
+        <div class="stats-bar" style="max-width:620px; margin: 0 auto var(--gap-2xl);">
           <div class="stat-card">
             <span class="stat-number" id="profile-stat-guides">–</span>
-            <span class="stat-label">📖 Guides publiés</span>
+            <span class="stat-label">📖 Guides</span>
           </div>
           <div class="stat-card">
             <span class="stat-number" id="profile-stat-builds">–</span>
-            <span class="stat-label">🔧 Builds créés</span>
+            <span class="stat-label">🔧 Builds</span>
           </div>
           <div class="stat-card">
             <span class="stat-number" id="profile-stat-favorites">–</span>
@@ -77,7 +245,7 @@
           </div>
         </div>
 
-        <!-- Mes guides publiés -->
+        <!-- Mes guides -->
         <div class="section-header">
           <h2 class="section-title">Mes guides</h2>
           <a href="create-guide.html" class="btn btn-primary btn-sm">+ Nouveau guide</a>
@@ -90,19 +258,63 @@
         </div>
 
         <!-- Danger zone -->
-        <div style="margin-top: var(--gap-2xl); padding: var(--gap-xl); background: rgba(255,68,102,0.05); border: 1px solid rgba(255,68,102,0.2); border-radius: var(--radius-lg);">
-          <h3 style="color: var(--neon-red); margin-bottom: var(--gap-sm);">⚠ Zone de danger</h3>
-          <p style="color: var(--text-secondary); font-size:0.875rem; margin-bottom: var(--gap-md);">
-            Ces actions sont irréversibles. Procède avec précaution.
-          </p>
-          <button class="btn btn-danger" id="btn-logout-danger">
-            🚪 Se déconnecter
-          </button>
+        <div style="margin-top:var(--gap-2xl); padding:var(--gap-xl); background:rgba(255,68,102,0.05); border:1px solid rgba(255,68,102,0.2); border-radius:var(--radius-lg);">
+          <h3 style="color:var(--neon-red); margin-bottom:var(--gap-sm);">⚠ Zone de danger</h3>
+          <p style="color:var(--text-secondary); font-size:0.875rem; margin-bottom:var(--gap-md);">Ces actions sont irréversibles.</p>
+          <button class="btn btn-danger" id="btn-logout-danger">🚪 Se déconnecter</button>
         </div>
 
       </div>
     </section>
+  </div>
 
+  <!-- ==============================
+       ✏️ MODAL ÉDITION PROFIL
+       ============================== -->
+  <div class="modal-overlay" id="modal-edit">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 style="font-size:1.1rem;">✏️ Modifier mon profil</h2>
+        <button class="btn-close" onclick="closeEditModal()">×</button>
+      </div>
+
+      <!-- Preview avatar en temps réel -->
+      <div style="display:flex; align-items:center; gap:var(--gap-lg); margin-bottom:var(--gap-xl); padding:var(--gap-md); background:var(--bg-card); border-radius:var(--radius-md);">
+        <div class="avatar-preview" id="modal-avatar-preview">👤</div>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:0.95rem;" id="modal-name-preview">Ton nom</div>
+          <div style="font-size:0.8rem; color:var(--text-muted);" id="modal-bio-preview">Ta bio apparaîtra ici...</div>
+        </div>
+      </div>
+
+      <!-- Champs -->
+      <div class="form-group">
+        <label class="form-label">Nom d'utilisateur</label>
+        <input id="edit-username" type="text" class="form-input" maxlength="30" placeholder="Ton pseudo" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Photo de profil <span style="color:var(--text-muted); font-weight:400;">(URL d'une image)</span></label>
+        <input id="edit-avatar" type="url" class="form-input" placeholder="https://..." />
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">
+          Astuce : utilise une image hébergée sur imgur.com ou discord CDN
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <textarea id="edit-bio" class="form-input" maxlength="160" rows="3"
+                  placeholder="Présente-toi en quelques mots..."></textarea>
+        <div class="char-counter" id="bio-counter">0 / 160</div>
+      </div>
+
+      <div style="display:flex; gap:var(--gap-md); margin-top:var(--gap-lg);">
+        <button class="btn btn-primary" style="flex:1;" id="btn-save-profile" onclick="saveProfile()">
+          💾 Sauvegarder
+        </button>
+        <button class="btn btn-ghost" onclick="closeEditModal()">Annuler</button>
+      </div>
+    </div>
   </div>
 
   <footer class="footer">
@@ -118,41 +330,91 @@
     import { db }         from "./js/firebase-config.js";
     import { requireAuth, initNavAuth, logoutUser, getUserProfile } from "./js/auth.js";
     import {
-      collection, query, where, orderBy, limit,
-      getDocs
+      doc, getDoc, updateDoc,
+      collection, query, where, getDocs
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { showLoader, hideLoader, formatDate, timeAgo } from "./js/main.js";
+    import { updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { auth } from "./js/firebase-config.js";
+    import { showLoader, hideLoader, showToast, formatDate, timeAgo } from "./js/main.js";
 
     const user    = await requireAuth();
     const profile = await getUserProfile(user.uid);
 
     initNavAuth();
-    document.getElementById("btn-logout-nav")?.addEventListener("click",     () => logoutUser());
-    document.getElementById("btn-logout-danger")?.addEventListener("click",  () => logoutUser());
+    document.getElementById("btn-logout-nav")?.addEventListener("click",    () => logoutUser());
+    document.getElementById("btn-logout-danger")?.addEventListener("click", () => logoutUser());
+    const navToggle = document.getElementById("nav-toggle");
+    const navLinks  = document.getElementById("nav-links");
 
-    document.getElementById("nav-toggle")?.addEventListener("click", () => {
-      document.getElementById("nav-links").classList.toggle("open");
+    function openMenu() {
+      navLinks?.classList.add("open");
+      navToggle?.classList.add("open");
+      document.getElementById("nav-overlay")?.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
+    function closeMenu() {
+      navLinks?.classList.remove("open");
+      navToggle?.classList.remove("open");
+      document.getElementById("nav-overlay")?.classList.remove("open");
+      document.body.style.overflow = "";
+    }
+
+    navToggle?.addEventListener("click", () => {
+      navLinks?.classList.contains("open") ? closeMenu() : openMenu();
+    });
+
+    navLinks?.addEventListener("click", (e) => {
+      if (e.target === navLinks) closeMenu();
+    });
+    document.getElementById("nav-overlay")?.addEventListener("click", closeMenu);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeMenu();
+    });
+
+
+    // Fermer le menu en cliquant sur un lien
+    document.querySelectorAll("#nav-links a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.getElementById("nav-links").classList.remove("open");
+        document.getElementById("nav-toggle").classList.remove("open");
+      });
     });
     window.addEventListener("scroll", () => {
       document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
     });
 
-    // ── Infos profil
-    if (profile) {
-      document.getElementById("profile-username").textContent = profile.username || "Joueur";
-      document.getElementById("profile-email").textContent    = profile.email || "";
-      document.getElementById("profile-role").textContent     = profile.role === "admin" ? "👑 Admin" : "🎮 Joueur";
-      document.getElementById("profile-joined").textContent   = profile.createdAt
-        ? `Membre depuis ${formatDate(profile.createdAt)}`
-        : "";
+    // ──────────────────────────────────────────────
+    // Affichage du profil
+    // ──────────────────────────────────────────────
+    function renderProfile(p) {
+      document.getElementById("profile-username").textContent = p.username || "Joueur";
+      document.getElementById("profile-email").textContent    = p.email || "";
+      document.getElementById("profile-role").textContent     = p.role === "admin" ? "👑 Admin" : "🎮 Joueur";
+      document.getElementById("profile-joined").textContent   = p.createdAt ? `Membre depuis ${formatDate(p.createdAt)}` : "";
 
-      if (profile.verified) {
-        document.getElementById("profile-verified").style.display = "inline-flex";
+      // Bio
+      const bioEl = document.getElementById("profile-bio");
+      bioEl.textContent = p.bio || "";
+      bioEl.style.display = p.bio ? "block" : "none";
+
+      // Avatar
+      if (p.photoURL) {
+        const img = document.getElementById("profile-avatar-img");
+        img.src = p.photoURL;
+        img.style.display = "block";
+        document.getElementById("profile-avatar-placeholder").style.display = "none";
       }
+
+      if (p.verified) document.getElementById("profile-verified").style.display = "inline-flex";
     }
 
-    // ── Stats
-    async function loadProfileStats() {
+    if (profile) renderProfile(profile);
+
+    // ──────────────────────────────────────────────
+    // Stats
+    // ──────────────────────────────────────────────
+    async function loadStats() {
       showLoader();
       try {
         const [guidesSnap, buildsSnap, favsSnap] = await Promise.all([
@@ -165,30 +427,22 @@
         document.getElementById("profile-stat-builds").textContent    = buildsSnap.size;
         document.getElementById("profile-stat-favorites").textContent = favsSnap.size;
 
-        // Total des likes reçus
         let totalLikes = 0;
         guidesSnap.forEach(d => { totalLikes += d.data().likesCount || 0; });
         document.getElementById("profile-stat-likes").textContent = totalLikes;
-
-      } catch (err) {
-        console.error("Erreur stats profil :", err);
       } finally {
         hideLoader();
       }
     }
 
-    // ── Mes guides publiés
-    async function loadProfileGuides() {
+    // ──────────────────────────────────────────────
+    // Mes guides
+    // ──────────────────────────────────────────────
+    async function loadGuides() {
       const container = document.getElementById("profile-guides");
-      showLoader();
       try {
         const [snap, gamesSnap] = await Promise.all([
-          getDocs(query(
-            collection(db, "guides"),
-            where("authorId", "==", user.uid),
-            orderBy("createdAt", "desc"),
-            limit(6)
-          )),
+          getDocs(query(collection(db, "guides"), where("authorId", "==", user.uid))),
           getDocs(collection(db, "games"))
         ]);
 
@@ -205,36 +459,135 @@
           return;
         }
 
-        let html = "";
-        snap.forEach(d => {
-          const g    = { id: d.id, ...d.data() };
-          const date = timeAgo(g.createdAt);
-          html += `
-            <article class="guide-card fade-in" onclick="window.location.href='guide.html?id=${g.id}'">
-              <div class="guide-card-header">
-                <span class="guide-game-tag">${gamesMap[g.gameId] || 'Jeu'}</span>
-                ${g.authorVerified ? '<span class="badge-verified">✓ Vérifié</span>' : ''}
-              </div>
-              <h3 class="guide-card-title">${g.title}</h3>
-              <p class="guide-card-preview">${(g.content || '').substring(0, 120)}...</p>
-              <footer class="guide-card-footer">
-                <span class="guide-date">${date}</span>
-                <span class="guide-likes">❤ ${g.likesCount || 0}</span>
-              </footer>
-            </article>
-          `;
-        });
-        container.innerHTML = html;
+        const guides = [];
+        snap.forEach(d => guides.push({ id: d.id, ...d.data() }));
+        guides.sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
 
+        container.innerHTML = guides.map(g => `
+          <article class="guide-card fade-in" onclick="window.location.href='guide.html?id=${g.id}'">
+            <div class="guide-card-header">
+              <span class="guide-game-tag">${gamesMap[g.gameId] || 'Jeu'}</span>
+              ${g.authorVerified ? '<span class="badge-verified">✓ Vérifié</span>' : ''}
+            </div>
+            <h3 class="guide-card-title">${g.title}</h3>
+            <p class="guide-card-preview">${(g.content || '').substring(0, 120)}...</p>
+            <footer class="guide-card-footer">
+              <span class="guide-date">${timeAgo(g.createdAt)}</span>
+              <span class="guide-likes">❤ ${g.likesCount || 0}</span>
+            </footer>
+          </article>
+        `).join("");
       } catch (err) {
-        container.innerHTML = `<p class="error-state">Impossible de charger tes guides.</p>`;
-      } finally {
-        hideLoader();
+        console.error(err);
+        container.innerHTML = `<p class="error-state" style="grid-column:1/-1;">Impossible de charger les guides.</p>`;
       }
     }
 
-    loadProfileStats();
-    loadProfileGuides();
+    loadStats();
+    loadGuides();
+
+    // ──────────────────────────────────────────────
+    // Modal édition profil
+    // ──────────────────────────────────────────────
+
+    window.openEditModal = function() {
+      const p = profile || {};
+      document.getElementById("edit-username").value = p.username || "";
+      document.getElementById("edit-avatar").value   = p.photoURL  || "";
+      document.getElementById("edit-bio").value      = p.bio       || "";
+      updateBioCounter();
+      updateModalPreview();
+      document.getElementById("modal-edit").classList.add("open");
+    };
+
+    window.closeEditModal = function() {
+      document.getElementById("modal-edit").classList.remove("open");
+    };
+
+    // Preview en temps réel dans le modal
+    function updateModalPreview() {
+      const name   = document.getElementById("edit-username").value.trim() || "Ton nom";
+      const bio    = document.getElementById("edit-bio").value.trim()      || "Ta bio apparaîtra ici...";
+      const avatar = document.getElementById("edit-avatar").value.trim();
+
+      document.getElementById("modal-name-preview").textContent = name;
+      document.getElementById("modal-bio-preview").textContent  = bio;
+
+      const previewEl = document.getElementById("modal-avatar-preview");
+      if (avatar) {
+        previewEl.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+          onerror="this.parentElement.textContent='👤'" />`;
+      } else {
+        previewEl.textContent = "👤";
+      }
+    }
+
+    function updateBioCounter() {
+      const len     = document.getElementById("edit-bio").value.length;
+      const counter = document.getElementById("bio-counter");
+      counter.textContent = `${len} / 160`;
+      counter.className   = `char-counter${len > 140 ? " warn" : ""}`;
+    }
+
+    document.getElementById("edit-username").addEventListener("input", updateModalPreview);
+    document.getElementById("edit-avatar").addEventListener("input",   updateModalPreview);
+    document.getElementById("edit-bio").addEventListener("input", () => {
+      updateBioCounter();
+      updateModalPreview();
+    });
+
+    // Fermer en cliquant sur l'overlay
+    document.getElementById("modal-edit").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("modal-edit"))
+        closeEditModal();
+    });
+
+    window.saveProfile = async function() {
+      const username = document.getElementById("edit-username").value.trim();
+      const photoURL = document.getElementById("edit-avatar").value.trim();
+      const bio      = document.getElementById("edit-bio").value.trim();
+      const btn      = document.getElementById("btn-save-profile");
+
+      if (!username) { showToast("Le nom est requis.", "warning"); return; }
+
+      btn.disabled    = true;
+      btn.textContent = "Sauvegarde...";
+      showLoader();
+
+      try {
+        // Mettre à jour Firestore
+        await updateDoc(doc(db, "users", user.uid), {
+          username,
+          photoURL: photoURL || "",
+          bio:      bio      || ""
+        });
+
+        // Mettre à jour Firebase Auth displayName
+        await updateProfile(auth.currentUser, {
+          displayName: username,
+          photoURL:    photoURL || null
+        });
+
+        // Mettre à jour l'affichage sans recharger
+        if (profile) {
+          profile.username = username;
+          profile.photoURL = photoURL;
+          profile.bio      = bio;
+        }
+        renderProfile(profile || { username, photoURL, bio });
+
+        closeEditModal();
+        showToast("Profil mis à jour ! ✓", "success");
+
+      } catch (err) {
+        console.error(err);
+        showToast("Erreur lors de la sauvegarde.", "error");
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = "💾 Sauvegarder";
+        hideLoader();
+      }
+    };
   </script>
 
 </body>

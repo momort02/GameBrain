@@ -136,8 +136,7 @@ async function loadMyBuilds(uid) {
     const q = query(
       collection(db, "builds"),
       where("userId", "==", uid),
-      orderBy("createdAt", "desc"),
-      limit(6)
+      limit(20)
     );
     const snap      = await getDocs(q);
     const gamesSnap = await getDocs(collection(db, "games"));
@@ -180,7 +179,7 @@ async function loadMyFavorites(uid) {
   showLoader();
   try {
     const favsSnap = await getDocs(
-      query(collection(db, "favorites"), where("userId", "==", uid), orderBy("createdAt", "desc"), limit(6))
+      query(collection(db, "favorites"), where("userId", "==", uid), limit(6))
     );
 
     if (favsSnap.empty) {
@@ -232,9 +231,91 @@ function initTabs() {
 
       tab.classList.add("active");
       document.getElementById(`panel-${target}`)?.classList.add("active");
+
+      // Charger l'historique au premier clic
+      if (target === "history") loadHistory();
     });
   });
 }
+
+// ──────────────────────────────────────────────
+// 🕘 Historique des guides consultés
+// ──────────────────────────────────────────────
+
+const HISTORY_KEY = "gb_history";
+const HISTORY_MAX = 20;
+
+export function trackGuideView(guideId, guideTitle, gameName, authorName) {
+  try {
+    const history = getHistory();
+    // Éviter les doublons — retire l'entrée existante si déjà présente
+    const filtered = history.filter(h => h.id !== guideId);
+    // Ajouter en tête
+    filtered.unshift({
+      id:         guideId,
+      title:      guideTitle,
+      gameName:   gameName,
+      authorName: authorName,
+      viewedAt:   Date.now()
+    });
+    // Garder seulement les MAX derniers
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(filtered.slice(0, HISTORY_MAX)));
+  } catch {}
+}
+
+function getHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+  } catch { return []; }
+}
+
+async function loadHistory() {
+  const container = document.getElementById("history-guides");
+  if (!container) return;
+
+  const history = getHistory();
+
+  if (!history.length) {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-icon">🕘</div>
+        <p>Tu n'as pas encore consulté de guides.</p>
+        <a href="index.html" class="btn btn-primary" style="margin-top:var(--gap-md);">Explorer les jeux</a>
+      </div>`;
+    return;
+  }
+
+  function timeAgoMs(ms) {
+    const diff = Date.now() - ms;
+    const m = Math.floor(diff / 60000);
+    const h = Math.floor(diff / 3600000);
+    const d = Math.floor(diff / 86400000);
+    if (m < 1)  return "À l'instant";
+    if (m < 60) return `Il y a ${m} min`;
+    if (h < 24) return `Il y a ${h}h`;
+    return `Il y a ${d}j`;
+  }
+
+  container.innerHTML = history.map(h => `
+    <article class="guide-card fade-in" onclick="window.location.href='guide.html?id=${h.id}'">
+      <div class="guide-card-header">
+        <span class="guide-game-tag">${h.gameName || "Jeu"}</span>
+        <span style="font-size:0.75rem; color:var(--text-muted);">${timeAgoMs(h.viewedAt)}</span>
+      </div>
+      <h3 class="guide-card-title">${h.title || "Guide"}</h3>
+      <footer class="guide-card-footer">
+        <span class="guide-author">👤 ${h.authorName || "Auteur"}</span>
+        <a href="guide.html?id=${h.id}" class="btn btn-sm btn-outline">Relire</a>
+      </footer>
+    </article>
+  `).join("");
+}
+
+window.clearHistory = function() {
+  localStorage.removeItem(HISTORY_KEY);
+  loadHistory();
+  showToast("Historique effacé.", "info");
+};
 
 // ──────────────────────────────────────────────
 // 🌐 Exposition globale (pour les onclick HTML)
@@ -273,5 +354,3 @@ document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initDashboard();
 });
-
-
