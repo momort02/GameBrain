@@ -4,9 +4,9 @@
 
 import { db, auth }  from "./firebase-config.js";
 import {
-  collection, query, where, orderBy, limit,
+  collection, query, where,
   getDocs, getDoc, doc, addDoc, deleteDoc,
-  updateDoc, increment, serverTimestamp, startAfter
+  updateDoc, increment, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { showToast, showLoader, hideLoader, filterByKeyword, timeAgo } from "./main.js";
@@ -18,9 +18,7 @@ import { showToast, showLoader, hideLoader, filterByKeyword, timeAgo } from "./m
 let currentGameId    = null;
 let currentUser      = null;
 let userFavorites    = new Set();
-let lastDoc          = null; // Pour pagination
 let allGuides        = [];   // Cache local pour filtrage
-const PAGE_SIZE      = 9;
 
 // ──────────────────────────────────────────────
 // 🚀 Initialisation
@@ -98,69 +96,52 @@ async function loadGameInfo() {
 // 📚 Chargement des guides (avec pagination)
 // ──────────────────────────────────────────────
 
-async function loadGuides(isLoadMore = false) {
+async function loadGuides() {
   const container = document.getElementById("guides-container");
-  const btnMore   = document.getElementById("btn-load-more");
   if (!container) return;
 
-  if (!isLoadMore) {
-    container.innerHTML = `<div class="skeleton-grid">${"<div class='skeleton-card'></div>".repeat(6)}</div>`;
-    lastDoc = null;
-    allGuides = [];
-  }
+  container.innerHTML = `<div class="skeleton-grid">${"<div class='skeleton-card'></div>".repeat(6)}</div>`;
+  allGuides = [];
 
   showLoader();
   try {
-    let q = query(
+    // Pas d'orderBy pour éviter l'erreur d'index Firestore composite.
+    // On récupère tous les guides du jeu et on trie côté client.
+    const q = query(
       collection(db, "guides"),
-      where("gameId", "==", currentGameId),
-      orderBy("createdAt", "desc"),
-      limit(PAGE_SIZE)
+      where("gameId", "==", currentGameId)
     );
-
-    if (lastDoc) {
-      q = query(
-        collection(db, "guides"),
-        where("gameId", "==", currentGameId),
-        orderBy("createdAt", "desc"),
-        startAfter(lastDoc),
-        limit(PAGE_SIZE)
-      );
-    }
 
     const snap = await getDocs(q);
 
-    if (snap.empty && !isLoadMore) {
+    if (snap.empty) {
       container.innerHTML = `
         <div class="empty-state">
           <div class="empty-icon">📜</div>
           <p>Aucun guide pour ce jeu.</p>
           <p>Sois le premier à contribuer !</p>
         </div>`;
-      if (btnMore) btnMore.style.display = "none";
       return;
     }
 
-    // Mettre à jour le curseur de pagination
-    lastDoc = snap.docs[snap.docs.length - 1];
-
-    // Afficher/masquer bouton "Charger plus"
-    if (btnMore) {
-      btnMore.style.display = snap.docs.length < PAGE_SIZE ? "none" : "block";
-    }
-
-    if (!isLoadMore) container.innerHTML = "";
-
+    // Trier par date décroissante côté client
     snap.forEach(d => {
       const guide = { id: d.id, ...d.data() };
       guide.isFavorite = userFavorites.has(guide.id);
       allGuides.push(guide);
-      container.insertAdjacentHTML("beforeend", buildGuideCard(guide));
     });
+
+    allGuides.sort((a, b) => {
+      const ta = a.createdAt?.toMillis?.() || 0;
+      const tb = b.createdAt?.toMillis?.() || 0;
+      return tb - ta;
+    });
+
+    container.innerHTML = allGuides.map(g => buildGuideCard(g)).join("");
 
   } catch (err) {
     console.error("Erreur guides :", err);
-    container.innerHTML = `<p class="error-state">Impossible de charger les guides.</p>`;
+    container.innerHTML = `<p class="error-state">Impossible de charger les guides. Vérifie ta connexion.</p>`;
   } finally {
     hideLoader();
   }
@@ -341,11 +322,7 @@ function initSortFilter() {
 // 📄 Pagination — bouton Charger plus
 // ──────────────────────────────────────────────
 
-document.getElementById("btn-load-more")?.addEventListener("click", () => {
-  loadGuides(true);
-});
+
 
 // Lancement
 document.addEventListener("DOMContentLoaded", initGamePage);
-
-

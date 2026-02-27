@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
   <style>
-    /* Rendu Markdown simple */
+    /* Rendu Markdown */
     .guide-body { line-height: 1.9; color: var(--text-primary); }
     .guide-body h2 { font-size: 1.4rem; color: var(--accent); margin: var(--gap-xl) 0 var(--gap-md); border-bottom: 1px solid var(--border); padding-bottom: var(--gap-sm); }
     .guide-body h3 { font-size: 1.1rem; color: var(--text-primary); margin: var(--gap-lg) 0 var(--gap-sm); }
@@ -20,11 +20,13 @@
     .guide-body hr { border: none; border-top: 1px solid var(--border); margin: var(--gap-xl) 0; }
     .guide-body strong { color: var(--text-primary); font-weight: 700; }
     .guide-body em { color: var(--text-secondary); font-style: italic; }
+    .guide-body a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; transition: opacity 0.15s; }
+    .guide-body a:hover { opacity: 0.75; }
 
-    /* Sidebar */
+    /* Layout */
     .guide-layout {
       display: grid;
-      grid-template-columns: 1fr 300px;
+      grid-template-columns: 1fr 280px;
       gap: var(--gap-xl);
       align-items: start;
     }
@@ -32,6 +34,9 @@
     .guide-sidebar {
       position: sticky;
       top: 80px;
+      display: flex;
+      flex-direction: column;
+      gap: var(--gap-md);
     }
 
     .sidebar-card {
@@ -39,15 +44,125 @@
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
       padding: var(--gap-lg);
+    }
+
+    .sidebar-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
       margin-bottom: var(--gap-md);
     }
 
-    .sidebar-title {
+    /* Bandeau auteur */
+    .author-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--gap-md);
+      flex-wrap: wrap;
+      padding: var(--gap-md) var(--gap-xl);
+      background: rgba(0, 200, 255, 0.04);
+      border-bottom: 1px solid var(--border-accent);
+    }
+
+    .author-bar-label {
       font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .author-bar-actions {
+      display: flex;
+      gap: var(--gap-sm);
+    }
+
+    /* Modal édition */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: var(--gap-lg);
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--gap-xl);
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--gap-xl);
+    }
+
+    .modal-title { font-size: 1.2rem; }
+
+    .btn-close {
+      background: none;
+      border: none;
       color: var(--text-muted);
-      margin-bottom: var(--gap-md);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px;
+      transition: color var(--transition-fast);
+    }
+    .btn-close:hover { color: var(--text-primary); }
+
+    /* Modal suppression */
+    .modal-delete .modal-box {
+      max-width: 420px;
+      text-align: center;
+    }
+
+    .delete-icon { font-size: 2.5rem; margin-bottom: var(--gap-md); }
+    .delete-title { font-size: 1.1rem; font-weight: 700; margin-bottom: var(--gap-sm); }
+    .delete-msg { color: var(--text-secondary); font-size: 0.875rem; margin-bottom: var(--gap-xl); }
+
+    .editor-toolbar {
+      display: flex;
+      gap: 4px;
+      padding: 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius-md) var(--radius-md) 0 0;
+      flex-wrap: wrap;
+    }
+
+    .editor-btn {
+      padding: 4px 10px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .editor-btn:hover { color: var(--accent); border-color: var(--border-accent); }
+
+    .edit-textarea {
+      border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
+      font-family: var(--font-mono) !important;
+      min-height: 280px;
     }
 
     @media (max-width: 768px) {
@@ -58,7 +173,9 @@
 </head>
 <body>
 
-  <!-- Navbar -->
+  <!-- ==============================
+       🧭 NAVIGATION
+       ============================== -->
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
       <a href="index.html" class="nav-logo">
@@ -97,12 +214,21 @@
       <div class="guide-layout">
 
         <!-- ==============================
-             📖 CONTENU PRINCIPAL
+             📖 ARTICLE PRINCIPAL
              ============================== -->
         <article>
           <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden;">
 
-            <!-- En-tête du guide -->
+            <!-- Bandeau auteur (visible uniquement si c'est ton guide) -->
+            <div class="author-bar" id="author-bar" style="display:none;">
+              <span class="author-bar-label">✏️ Tu es l'auteur de ce guide</span>
+              <div class="author-bar-actions">
+                <button class="btn btn-secondary btn-sm" onclick="openEditModal()">✏️ Modifier</button>
+                <button class="btn btn-danger btn-sm"   onclick="openDeleteModal()">🗑 Supprimer</button>
+              </div>
+            </div>
+
+            <!-- En-tête -->
             <div style="padding: var(--gap-xl); border-bottom: 1px solid var(--border);">
               <div style="display:flex; gap:var(--gap-sm); flex-wrap:wrap; margin-bottom:var(--gap-md);">
                 <span class="guide-game-tag" id="guide-game-tag">Jeu</span>
@@ -122,16 +248,15 @@
                   <button class="btn-like" id="btn-like" onclick="handleLike()">
                     ❤ <span id="like-count">0</span>
                   </button>
-                  <button class="btn-favorite" id="btn-fav" onclick="handleFavorite()" title="Ajouter aux favoris">☆</button>
+                  <button class="btn-favorite" id="btn-fav" onclick="handleFavorite()" title="Favoris">☆</button>
                 </div>
               </div>
             </div>
 
-            <!-- Corps du guide -->
+            <!-- Corps -->
             <div style="padding: var(--gap-xl);">
               <div class="guide-body" id="guide-body">
-                <!-- Contenu rendu dynamiquement -->
-                <div class="skeleton-card" style="height:400px;"></div>
+                <div class="skeleton-card" style="height:300px;"></div>
               </div>
             </div>
 
@@ -143,33 +268,39 @@
              ============================== -->
         <aside class="guide-sidebar">
 
-          <!-- Actions -->
           <div class="sidebar-card">
-            <p class="sidebar-title">Actions</p>
+            <p class="sidebar-label">Actions</p>
             <div style="display:flex; flex-direction:column; gap:var(--gap-sm);">
-              <button class="btn btn-primary btn-full" id="sidebar-btn-like" onclick="handleLike()">
-                ❤ Liker ce guide (<span id="sidebar-like-count">0</span>)
+              <button class="btn btn-primary btn-full btn-sm" id="sidebar-btn-like" onclick="handleLike()">
+                ❤ Liker (<span id="sidebar-like-count">0</span>)
               </button>
-              <button class="btn btn-secondary btn-full" id="sidebar-btn-fav" onclick="handleFavorite()">
+              <button class="btn btn-secondary btn-full btn-sm" id="sidebar-btn-fav" onclick="handleFavorite()">
                 ☆ Ajouter aux favoris
               </button>
             </div>
           </div>
 
-          <!-- Infos du guide -->
           <div class="sidebar-card">
-            <p class="sidebar-title">Infos</p>
-            <div style="display:flex; flex-direction:column; gap:var(--gap-sm); font-size:0.875rem; color:var(--text-secondary);">
-              <div>🎮 Jeu : <strong id="info-game" style="color:var(--text-primary);">–</strong></div>
-              <div>👤 Auteur : <strong id="info-author" style="color:var(--text-primary);">–</strong></div>
-              <div>📅 Publié : <strong id="info-date" style="color:var(--text-primary);">–</strong></div>
-              <div>❤ Likes : <strong id="info-likes" style="color:var(--text-primary);">0</strong></div>
+            <p class="sidebar-label">Infos</p>
+            <div style="display:flex; flex-direction:column; gap:8px; font-size:0.85rem; color:var(--text-secondary);">
+              <div>🎮 <strong id="info-game" style="color:var(--text-primary);">–</strong></div>
+              <div>👤 <strong id="info-author" style="color:var(--text-primary);">–</strong></div>
+              <div>📅 <strong id="info-date" style="color:var(--text-primary);">–</strong></div>
+              <div>❤ <strong id="info-likes" style="color:var(--text-primary);">0</strong></div>
             </div>
           </div>
 
-          <!-- Lien vers le jeu -->
+          <!-- Actions auteur dans la sidebar aussi -->
+          <div class="sidebar-card" id="sidebar-author-card" style="display:none;">
+            <p class="sidebar-label">Mon guide</p>
+            <div style="display:flex; flex-direction:column; gap:var(--gap-sm);">
+              <button class="btn btn-secondary btn-full btn-sm" onclick="openEditModal()">✏️ Modifier</button>
+              <button class="btn btn-danger btn-full btn-sm"   onclick="openDeleteModal()">🗑 Supprimer</button>
+            </div>
+          </div>
+
           <div class="sidebar-card">
-            <p class="sidebar-title">Voir plus</p>
+            <p class="sidebar-label">Voir plus</p>
             <a href="#" id="link-more-guides" class="btn btn-outline btn-full btn-sm">
               📚 Autres guides pour ce jeu
             </a>
@@ -177,6 +308,63 @@
 
         </aside>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================
+       ✏️ MODAL ÉDITION
+       ============================== -->
+  <div class="modal-overlay" id="modal-edit">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 class="modal-title">✏️ Modifier le guide</h2>
+        <button class="btn-close" onclick="closeEditModal()">×</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Titre <span style="color:var(--neon-red)">*</span></label>
+        <input id="edit-title" type="text" class="form-input" maxlength="100" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Contenu <span style="color:var(--neon-red)">*</span></label>
+        <div class="editor-toolbar">
+          <button type="button" class="editor-btn" data-insert="**gras**">B</button>
+          <button type="button" class="editor-btn" data-insert="*italique*"><i>I</i></button>
+          <button type="button" class="editor-btn" data-insert="## Titre">H2</button>
+          <button type="button" class="editor-btn" data-insert="### Sous-titre">H3</button>
+          <button type="button" class="editor-btn" data-insert="- Élément">• Liste</button>
+          <button type="button" class="editor-btn" data-insert="`code`">Code</button>
+          <button type="button" class="editor-btn" data-insert="---">—</button>
+        </div>
+        <textarea id="edit-content" class="form-input edit-textarea"></textarea>
+      </div>
+
+      <div style="display:flex; gap:var(--gap-md); margin-top:var(--gap-lg);">
+        <button class="btn btn-primary" style="flex:1;" id="btn-save-edit" onclick="saveEdit()">
+          💾 Sauvegarder
+        </button>
+        <button class="btn btn-ghost" onclick="closeEditModal()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==============================
+       🗑 MODAL SUPPRESSION
+       ============================== -->
+  <div class="modal-overlay modal-delete" id="modal-delete">
+    <div class="modal-box">
+      <div class="delete-icon">🗑</div>
+      <div class="delete-title">Supprimer ce guide ?</div>
+      <p class="delete-msg">
+        Cette action est <strong>irréversible</strong>. Le guide sera définitivement supprimé pour tout le monde.
+      </p>
+      <div style="display:flex; gap:var(--gap-md); justify-content:center;">
+        <button class="btn btn-danger" style="min-width:140px;" id="btn-confirm-delete" onclick="confirmDelete()">
+          🗑 Oui, supprimer
+        </button>
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">Annuler</button>
       </div>
     </div>
   </div>
@@ -199,6 +387,7 @@
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { showToast, showLoader, hideLoader, formatDate } from "./js/main.js";
 
+    // ── Nav
     initNavAuth();
     document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
     document.getElementById("nav-toggle")?.addEventListener("click", () => {
@@ -208,30 +397,33 @@
       document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30);
     });
 
-    const params  = new URLSearchParams(window.location.search);
-    const guideId = params.get("id");
+    // ── État
+    const params    = new URLSearchParams(window.location.search);
+    const guideId   = params.get("id");
     if (!guideId) { window.location.href = "index.html"; }
 
-    let currentGuide   = null;
-    let currentUser    = await getCurrentUser();
-    let isFavorited    = false;
-    let hasLiked       = false;
+    let currentGuide = null;
+    let currentUser  = await getCurrentUser();
+    let isFavorited  = false;
+    let hasLiked     = false;
+    let isAuthor     = false;
 
-    // ── Rendu Markdown simple (sans librairie externe)
+    // ── Markdown renderer
     function renderMarkdown(text) {
       return text
-        .replace(/^### (.+)$/gm, "<h3>$1</h3>")
-        .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+        .replace(/^### (.+)$/gm,   "<h3>$1</h3>")
+        .replace(/^## (.+)$/gm,    "<h2>$1</h2>")
         .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-        .replace(/\*(.+?)\*/g, "<em>$1</em>")
-        .replace(/`(.+?)`/g, "<code>$1</code>")
-        .replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>")
-        .replace(/^- (.+)$/gm, "<li>$1</li>")
+        .replace(/\*(.+?)\*/g,     "<em>$1</em>")
+        .replace(/`(.+?)`/g,       "<code>$1</code>")
+        // Liens [texte](url) → <a href="url">texte</a>
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+        .replace(/^> (.+)$/gm,     "<blockquote>$1</blockquote>")
+        .replace(/^- (.+)$/gm,     "<li>$1</li>")
         .replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>")
-        .replace(/^\d+\. (.+)$/gm, "<li>$1</li>")
-        .replace(/^---$/gm, "<hr>")
-        .replace(/\n\n/g, "</p><p>")
-        .replace(/^(?!<[h|u|b|l|hr])(.+)$/gm, "<p>$1</p>");
+        .replace(/^---$/gm,        "<hr>")
+        .replace(/\n\n/g,        "</p><p>")
+        .replace(/^(?!<[h2|h3|ul|hr|bl])(.+)$/gm, "<p>$1</p>");
     }
 
     // ── Chargement du guide
@@ -247,16 +439,13 @@
 
         currentGuide = { id: snap.id, ...snap.data() };
 
-        // Charger le jeu
+        // Jeu
         const gameSnap = await getDoc(doc(db, "games", currentGuide.gameId));
         const gameName = gameSnap.exists() ? gameSnap.data().name : "Jeu";
 
         // Breadcrumb
-        const breadcrumbGame = document.getElementById("breadcrumb-game");
-        if (breadcrumbGame) {
-          breadcrumbGame.textContent = gameName;
-          breadcrumbGame.href = `game.html?id=${currentGuide.gameId}`;
-        }
+        const bcGame = document.getElementById("breadcrumb-game");
+        if (bcGame) { bcGame.textContent = gameName; bcGame.href = `game.html?id=${currentGuide.gameId}`; }
         document.getElementById("breadcrumb-title").textContent = currentGuide.title;
         document.title = `${currentGuide.title} — GameBrain`;
 
@@ -265,30 +454,29 @@
         document.getElementById("guide-game-tag").textContent = gameName;
         document.getElementById("guide-author").textContent   = currentGuide.authorName || "Anonyme";
         document.getElementById("guide-date").textContent     = formatDate(currentGuide.createdAt);
-
-        if (currentGuide.authorVerified) {
-          document.getElementById("guide-verified").style.display = "inline-flex";
-        }
+        if (currentGuide.authorVerified) document.getElementById("guide-verified").style.display = "inline-flex";
 
         // Likes
         const likes = currentGuide.likesCount || 0;
         document.getElementById("like-count").textContent         = likes;
         document.getElementById("sidebar-like-count").textContent = likes;
-
-        // Sidebar
-        document.getElementById("info-game").textContent   = gameName;
-        document.getElementById("info-author").textContent = currentGuide.authorName || "Anonyme";
-        document.getElementById("info-date").textContent   = formatDate(currentGuide.createdAt);
-        document.getElementById("info-likes").textContent  = likes;
-
-        // Lien vers le jeu
-        document.getElementById("link-more-guides").href = `game.html?id=${currentGuide.gameId}`;
+        document.getElementById("info-game").textContent          = gameName;
+        document.getElementById("info-author").textContent        = currentGuide.authorName || "Anonyme";
+        document.getElementById("info-date").textContent          = formatDate(currentGuide.createdAt);
+        document.getElementById("info-likes").textContent         = likes;
+        document.getElementById("link-more-guides").href          = `game.html?id=${currentGuide.gameId}`;
 
         // Contenu
-        const body = document.getElementById("guide-body");
-        body.innerHTML = renderMarkdown(currentGuide.content || "");
+        document.getElementById("guide-body").innerHTML = renderMarkdown(currentGuide.content || "");
 
-        // Si connecté, vérifier favoris
+        // ── Est-ce que c'est l'auteur ?
+        if (currentUser && currentUser.uid === currentGuide.authorId) {
+          isAuthor = true;
+          document.getElementById("author-bar").style.display        = "flex";
+          document.getElementById("sidebar-author-card").style.display = "block";
+        }
+
+        // Favoris
         if (currentUser) {
           const favsSnap = await getDocs(query(
             collection(db, "favorites"),
@@ -300,17 +488,135 @@
         }
 
       } catch (err) {
-        console.error("Erreur guide :", err);
+        console.error(err);
         showToast("Impossible de charger le guide.", "error");
       } finally {
         hideLoader();
       }
     }
 
-    // ── Like
+    // ──────────────────────────────────────────────
+    // ✏️ ÉDITION
+    // ──────────────────────────────────────────────
+
+    window.openEditModal = function() {
+      // Pré-remplir le formulaire avec les valeurs actuelles
+      document.getElementById("edit-title").value   = currentGuide.title || "";
+      document.getElementById("edit-content").value = currentGuide.content || "";
+      document.getElementById("modal-edit").classList.add("open");
+    };
+
+    window.closeEditModal = function() {
+      document.getElementById("modal-edit").classList.remove("open");
+    };
+
+    window.saveEdit = async function() {
+      const title   = document.getElementById("edit-title").value.trim();
+      const content = document.getElementById("edit-content").value.trim();
+      const btn     = document.getElementById("btn-save-edit");
+
+      if (!title)              { showToast("Le titre est requis.",   "warning"); return; }
+      if (content.length < 20) { showToast("Le contenu est trop court.", "warning"); return; }
+
+      btn.disabled    = true;
+      btn.textContent = "Sauvegarde...";
+      showLoader();
+
+      try {
+        await updateDoc(doc(db, "guides", guideId), { title, content });
+
+        // Mettre à jour l'affichage sans recharger
+        currentGuide.title   = title;
+        currentGuide.content = content;
+        document.getElementById("guide-title").textContent      = title;
+        document.getElementById("breadcrumb-title").textContent = title;
+        document.getElementById("guide-body").innerHTML         = renderMarkdown(content);
+        document.title = `${title} — GameBrain`;
+
+        closeEditModal();
+        showToast("Guide mis à jour ! ✓", "success");
+      } catch (err) {
+        console.error(err);
+        showToast("Erreur lors de la sauvegarde.", "error");
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = "💾 Sauvegarder";
+        hideLoader();
+      }
+    };
+
+    // Toolbar Markdown dans le modal
+    document.querySelectorAll(".editor-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const textarea = document.getElementById("edit-content");
+        const snippet  = btn.dataset.insert;
+        const start    = textarea.selectionStart;
+        const before   = textarea.value.substring(0, start);
+        const after    = textarea.value.substring(textarea.selectionEnd);
+        textarea.value = `${before}${snippet}${after}`;
+        textarea.focus();
+        textarea.selectionStart = textarea.selectionEnd = start + snippet.length;
+      });
+    });
+
+    // ──────────────────────────────────────────────
+    // 🗑 SUPPRESSION
+    // ──────────────────────────────────────────────
+
+    window.openDeleteModal = function() {
+      document.getElementById("modal-delete").classList.add("open");
+    };
+
+    window.closeDeleteModal = function() {
+      document.getElementById("modal-delete").classList.remove("open");
+    };
+
+    window.confirmDelete = async function() {
+      const btn = document.getElementById("btn-confirm-delete");
+      btn.disabled    = true;
+      btn.textContent = "Suppression...";
+      showLoader();
+
+      try {
+        // Supprimer le guide
+        await deleteDoc(doc(db, "guides", guideId));
+
+        // Nettoyer les favoris associés
+        const favsSnap = await getDocs(query(
+          collection(db, "favorites"),
+          where("guideId", "==", guideId)
+        ));
+        for (const d of favsSnap.docs) {
+          await deleteDoc(doc(db, "favorites", d.id));
+        }
+
+        showToast("Guide supprimé.", "info");
+        // Rediriger vers le jeu
+        window.location.href = `game.html?id=${currentGuide.gameId}`;
+
+      } catch (err) {
+        console.error(err);
+        showToast("Erreur lors de la suppression.", "error");
+        btn.disabled    = false;
+        btn.textContent = "🗑 Oui, supprimer";
+        hideLoader();
+      }
+    };
+
+    // Fermer modals en cliquant sur l'overlay
+    document.querySelectorAll(".modal-overlay").forEach(overlay => {
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) overlay.classList.remove("open");
+      });
+    });
+
+    // ──────────────────────────────────────────────
+    // ❤ LIKE
+    // ──────────────────────────────────────────────
+
     window.handleLike = async function() {
       if (!currentUser) { showToast("Connecte-toi pour liker.", "warning"); return; }
-      if (hasLiked) { showToast("Tu as déjà liké ce guide !", "warning"); return; }
+      if (hasLiked)     { showToast("Tu as déjà liké ce guide !", "warning"); return; }
 
       try {
         await updateDoc(doc(db, "guides", guideId), { likesCount: increment(1) });
@@ -321,52 +627,41 @@
         document.getElementById("sidebar-like-count").textContent = newCount;
         document.getElementById("info-likes").textContent         = newCount;
         document.getElementById("btn-like").classList.add("liked");
-        document.getElementById("sidebar-btn-like").classList.add("liked");
         showToast("Guide liké ! ❤", "success");
-      } catch (err) {
-        showToast("Erreur lors du like.", "error");
-      }
+      } catch { showToast("Erreur lors du like.", "error"); }
     };
 
-    // ── Favoris
+    // ──────────────────────────────────────────────
+    // ⭐ FAVORIS
+    // ──────────────────────────────────────────────
+
     window.handleFavorite = async function() {
       if (!currentUser) { showToast("Connecte-toi pour ajouter aux favoris.", "warning"); return; }
 
       try {
         const favsRef = collection(db, "favorites");
-
         if (!isFavorited) {
-          await addDoc(favsRef, {
-            userId:    currentUser.uid,
-            guideId,
-            createdAt: serverTimestamp()
-          });
+          await addDoc(favsRef, { userId: currentUser.uid, guideId, createdAt: serverTimestamp() });
           isFavorited = true;
           showToast("Ajouté aux favoris !", "success");
         } else {
-          const snap = await getDocs(query(favsRef,
-            where("userId",  "==", currentUser.uid),
-            where("guideId", "==", guideId)
-          ));
+          const snap = await getDocs(query(favsRef, where("userId", "==", currentUser.uid), where("guideId", "==", guideId)));
           for (const d of snap.docs) await deleteDoc(doc(db, "favorites", d.id));
           isFavorited = false;
           showToast("Retiré des favoris.", "info");
         }
         updateFavButton();
-      } catch (err) {
-        showToast("Erreur favoris.", "error");
-      }
+      } catch { showToast("Erreur favoris.", "error"); }
     };
 
     function updateFavButton() {
-      const text  = isFavorited ? "★ Dans mes favoris" : "☆ Ajouter aux favoris";
-      const icon  = isFavorited ? "★" : "☆";
-      const fav1  = document.getElementById("btn-fav");
-      const fav2  = document.getElementById("sidebar-btn-fav");
-      if (fav1) { fav1.textContent = icon; fav1.classList.toggle("active", isFavorited); }
-      if (fav2) { fav2.textContent = text; fav2.classList.toggle("btn-outline", !isFavorited); }
+      const fav1 = document.getElementById("btn-fav");
+      const fav2 = document.getElementById("sidebar-btn-fav");
+      if (fav1) { fav1.textContent = isFavorited ? "★" : "☆"; fav1.classList.toggle("active", isFavorited); }
+      if (fav2) { fav2.textContent = isFavorited ? "★ Dans mes favoris" : "☆ Ajouter aux favoris"; }
     }
 
+    // ── Lancement
     loadGuide();
   </script>
 
