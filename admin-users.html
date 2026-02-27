@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Gestion des utilisateurs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Page header */
+    .admin-header {
+      padding: calc(64px + var(--gap-xl)) 0 var(--gap-xl);
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(0,200,255,0.04) 0%, transparent 100%);
+    }
+
+    .admin-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .admin-subtitle { color: var(--text-muted); font-size: 0.875rem; }
+
+    /* ── Stats bar */
+    .admin-stats {
+      display: flex;
+      gap: var(--gap-md);
+      flex-wrap: wrap;
+      margin-top: var(--gap-lg);
+    }
+
+    .admin-stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+    }
+
+    .admin-stat-num {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .admin-stat-label { color: var(--text-muted); }
+
+    /* ── Toolbar */
+    .admin-toolbar {
+      display: flex;
+      align-items: center;
+      gap: var(--gap-md);
+      margin: var(--gap-xl) 0 var(--gap-lg);
+      flex-wrap: wrap;
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+      max-width: 380px;
+    }
+
+    .search-wrapper input {
+      width: 100%;
+      padding: 9px 14px 9px 36px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-wrapper input:focus { border-color: var(--accent); }
+
+    .search-wrapper .s-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    .filter-select {
+      padding: 9px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* ── Table */
+    .users-table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      background: var(--bg-surface);
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.15s;
+    }
+
+    thead th:hover { color: var(--text-secondary); }
+    thead th.sorted { color: var(--accent); }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.12s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+    td { padding: 12px 16px; vertical-align: middle; }
+
+    /* ── User cell */
+    .user-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar-sm {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .user-avatar-sm img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .user-name { font-weight: 600; color: var(--text-primary); }
+    .user-email { font-size: 0.78rem; color: var(--text-muted); margin-top: 1px; }
+
+    /* ── Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .badge-admin   { background: rgba(255,200,0,0.12); color: #fbbf24; border: 1px solid rgba(255,200,0,0.25); }
+    .badge-user    { background: rgba(0,200,255,0.08); color: var(--accent); border: 1px solid rgba(0,200,255,0.2); }
+    .badge-check   { background: rgba(34,197,94,0.1); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+    .badge-nocheck { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* ── Actions */
+    .actions-cell {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .action-btn {
+      padding: 5px 10px;
+      font-size: 0.75rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .action-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .action-btn.danger:hover { border-color: var(--neon-red); color: var(--neon-red); }
+    .action-btn.success:hover { border-color: #4ade80; color: #4ade80; }
+
+    /* ── Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: var(--gap-lg);
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: var(--gap-xl);
+      width: 100%;
+      max-width: 440px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .modal-icon { font-size: 2.2rem; text-align: center; margin-bottom: var(--gap-md); }
+    .modal-title { font-size: 1.1rem; font-weight: 700; text-align: center; margin-bottom: var(--gap-sm); }
+    .modal-desc { color: var(--text-secondary); font-size: 0.875rem; text-align: center; margin-bottom: var(--gap-xl); line-height: 1.6; }
+
+    .modal-actions { display: flex; gap: var(--gap-md); justify-content: center; }
+
+    /* ── Empty / loading */
+    .table-empty {
+      text-align: center;
+      padding: var(--gap-2xl);
+      color: var(--text-muted);
+    }
+
+    .skeleton-row td { padding: 14px 16px; }
+    .skeleton-line {
+      height: 14px;
+      background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.97); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-logo">
+        <span class="logo-icon">🧠</span>
+        <span class="logo-text">GameBrain</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Accueil</a></li>
+        <li><a href="search.html">🔍 Recherche</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="create-guide.html">✍ Créer un guide</a></li>
+        <li><a href="profile.html">👤 Profil</a></li>
+        <li><a href="admin-users.html" class="active">👑 Admin</a></li>
+      </ul>
+      <div class="nav-user" id="nav-user">
+        <span class="nav-username" id="nav-username">Admin</span>
+        <div class="nav-avatar" id="nav-avatar">👤</div>
+        <button class="btn btn-ghost btn-sm" id="btn-logout-nav">Quitter</button>
+      </div>
+      <button class="nav-toggle" id="nav-toggle"><span></span><span></span><span></span></button>
+    </div>
+  </nav>
+
+  <div class="page-wrapper">
+
+    <!-- Header -->
+    <div class="admin-header">
+      <div class="container">
+        <div style="display:flex; align-items:center; gap:var(--gap-md); flex-wrap:wrap; justify-content:space-between;">
+          <div>
+            <h1 class="admin-title">👑 Gestion des utilisateurs</h1>
+            <p class="admin-subtitle">Gérer les rôles, vérifications et accès des membres</p>
+          </div>
+          <a href="dashboard.html" class="btn btn-ghost btn-sm">← Dashboard</a>
+        </div>
+
+        <div class="admin-stats">
+          <div class="admin-stat">
+            <span class="admin-stat-num" id="stat-total">–</span>
+            <span class="admin-stat-label">Total membres</span>
+          </div>
+          <div class="admin-stat">
+            <span class="admin-stat-num" id="stat-admins">–</span>
+            <span class="admin-stat-label">Admins</span>
+          </div>
+          <div class="admin-stat">
+            <span class="admin-stat-num" id="stat-verified">–</span>
+            <span class="admin-stat-label">Auteurs vérifiés</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenu -->
+    <section class="section">
+      <div class="container">
+
+        <!-- Toolbar -->
+        <div class="admin-toolbar">
+          <div class="search-wrapper">
+            <span class="s-icon">🔍</span>
+            <input id="search-input" type="search" placeholder="Rechercher un membre..." oninput="filterUsers()" />
+          </div>
+          <select class="filter-select" id="role-filter" onchange="filterUsers()">
+            <option value="all">Tous les rôles</option>
+            <option value="admin">Admins</option>
+            <option value="user">Membres</option>
+          </select>
+          <select class="filter-select" id="verified-filter" onchange="filterUsers()">
+            <option value="all">Tous</option>
+            <option value="verified">Vérifiés</option>
+            <option value="unverified">Non vérifiés</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="users-table-wrap">
+          <table id="users-table">
+            <thead>
+              <tr>
+                <th onclick="sortBy('username')">Membre <span id="sort-username"></span></th>
+                <th onclick="sortBy('role')">Rôle <span id="sort-role"></span></th>
+                <th onclick="sortBy('verified')">Statut <span id="sort-verified"></span></th>
+                <th onclick="sortBy('guides')">Guides <span id="sort-guides"></span></th>
+                <th onclick="sortBy('createdAt')">Inscription <span id="sort-createdAt"></span></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody">
+              <!-- Skeleton -->
+              <tr class="skeleton-row"><td><div class="skeleton-line" style="width:140px"></div></td><td><div class="skeleton-line" style="width:60px"></div></td><td><div class="skeleton-line" style="width:80px"></div></td><td><div class="skeleton-line" style="width:30px"></div></td><td><div class="skeleton-line" style="width:90px"></div></td><td><div class="skeleton-line" style="width:120px"></div></td></tr>
+              <tr class="skeleton-row"><td><div class="skeleton-line" style="width:160px"></div></td><td><div class="skeleton-line" style="width:50px"></div></td><td><div class="skeleton-line" style="width:70px"></div></td><td><div class="skeleton-line" style="width:25px"></div></td><td><div class="skeleton-line" style="width:85px"></div></td><td><div class="skeleton-line" style="width:120px"></div></td></tr>
+              <tr class="skeleton-row"><td><div class="skeleton-line" style="width:120px"></div></td><td><div class="skeleton-line" style="width:65px"></div></td><td><div class="skeleton-line" style="width:75px"></div></td><td><div class="skeleton-line" style="width:35px"></div></td><td><div class="skeleton-line" style="width:90px"></div></td><td><div class="skeleton-line" style="width:120px"></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p id="results-count" style="color:var(--text-muted); font-size:0.8rem; margin-top:var(--gap-md);"></p>
+
+      </div>
+    </section>
+  </div>
+
+  <!-- Modal confirmation -->
+  <div class="modal-overlay" id="modal-confirm">
+    <div class="modal-box">
+      <div class="modal-icon" id="modal-icon">⚠️</div>
+      <div class="modal-title" id="modal-title">Confirmer l'action</div>
+      <p class="modal-desc" id="modal-desc">Es-tu sûr de vouloir effectuer cette action ?</p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="modal-confirm-btn" onclick="executeAction()">Confirmer</button>
+        <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">🧠 GameBrain</div>
+        <p class="footer-text">© 2025 GameBrain</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { db, auth }  from "./js/firebase-config.js";
+    import { requireAuth, initNavAuth, logoutUser, getUserProfile } from "./js/auth.js";
+    import {
+      collection, getDocs, doc, updateDoc, deleteDoc, query, where
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { showToast, showLoader, hideLoader, formatDate } from "./js/main.js";
+
+    // ── Nav
+    initNavAuth();
+    document.getElementById("btn-logout-nav")?.addEventListener("click", () => logoutUser());
+    const _toggle = document.getElementById("nav-toggle");
+    const _links  = document.getElementById("nav-links");
+    function closeMenu() { _links?.classList.remove("open"); _toggle?.classList.remove("open"); }
+    function openMenu()  { _links?.classList.add("open");    _toggle?.classList.add("open"); }
+    _toggle?.addEventListener("click", (e) => { e.stopPropagation(); _links?.classList.contains("open") ? closeMenu() : openMenu(); });
+    document.querySelectorAll("#nav-links a").forEach(l => l.addEventListener("click", closeMenu));
+    document.addEventListener("click", (e) => { if (_links?.classList.contains("open") && !_links.contains(e.target) && e.target !== _toggle) closeMenu(); });
+    window.addEventListener("scroll", () => { document.getElementById("navbar")?.classList.toggle("scrolled", window.scrollY > 30); });
+
+    // ── Vérifier que l'utilisateur est admin
+    const user    = await requireAuth();
+    const profile = await getUserProfile(user.uid);
+
+    if (!profile || profile.role !== "admin") {
+      showToast("Accès refusé — réservé aux admins.", "error");
+      window.location.href = "index.html";
+    }
+
+    // ── État
+    let allUsers   = [];
+    let guideCounts = {};
+    let sortKey    = "createdAt";
+    let sortDir    = -1; // -1 = desc, 1 = asc
+    let pendingAction = null;
+
+    // ── Chargement
+    showLoader();
+    try {
+      const [usersSnap, guidesSnap] = await Promise.all([
+        getDocs(collection(db, "users")),
+        getDocs(collection(db, "guides"))
+      ]);
+
+      // Compter les guides par auteur
+      guidesSnap.forEach(d => {
+        const aid = d.data().authorId;
+        guideCounts[aid] = (guideCounts[aid] || 0) + 1;
+      });
+
+      usersSnap.forEach(d => {
+        allUsers.push({ id: d.id, ...d.data(), guides: guideCounts[d.id] || 0 });
+      });
+
+      // Stats
+      document.getElementById("stat-total").textContent    = allUsers.length;
+      document.getElementById("stat-admins").textContent   = allUsers.filter(u => u.role === "admin").length;
+      document.getElementById("stat-verified").textContent = allUsers.filter(u => u.verified).length;
+
+      renderTable();
+
+    } catch (err) {
+      console.error(err);
+      showToast("Erreur de chargement.", "error");
+    } finally {
+      hideLoader();
+    }
+
+    // ──────────────────────────────────────────────
+    // Rendu du tableau
+    // ──────────────────────────────────────────────
+    function renderTable() {
+      const kw       = document.getElementById("search-input").value.trim().toLowerCase();
+      const roleF    = document.getElementById("role-filter").value;
+      const verifiedF = document.getElementById("verified-filter").value;
+
+      let filtered = allUsers.filter(u => {
+        const matchSearch = !kw ||
+          u.username?.toLowerCase().includes(kw) ||
+          u.email?.toLowerCase().includes(kw);
+        const matchRole = roleF === "all" || u.role === roleF;
+        const matchVerified =
+          verifiedF === "all" ||
+          (verifiedF === "verified" && u.verified) ||
+          (verifiedF === "unverified" && !u.verified);
+        return matchSearch && matchRole && matchVerified;
+      });
+
+      // Tri
+      filtered.sort((a, b) => {
+        let va = a[sortKey], vb = b[sortKey];
+        if (sortKey === "createdAt") {
+          va = va?.toMillis?.() || 0;
+          vb = vb?.toMillis?.() || 0;
+        }
+        if (sortKey === "verified") { va = va ? 1 : 0; vb = vb ? 1 : 0; }
+        if (va < vb) return -sortDir;
+        if (va > vb) return sortDir;
+        return 0;
+      });
+
+      const tbody = document.getElementById("users-tbody");
+      document.getElementById("results-count").textContent =
+        `${filtered.length} membre${filtered.length > 1 ? "s" : ""} affiché${filtered.length > 1 ? "s" : ""}`;
+
+      if (!filtered.length) {
+        tbody.innerHTML = `<tr><td colspan="6" class="table-empty">Aucun membre trouvé.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(u => {
+        const initials = (u.username || "?").charAt(0).toUpperCase();
+        const avatarHtml = u.photoURL
+          ? `<div class="user-avatar-sm"><img src="${u.photoURL}" onerror="this.parentElement.textContent='${initials}'" /></div>`
+          : `<div class="user-avatar-sm">${initials}</div>`;
+
+        const roleBadge = u.role === "admin"
+          ? `<span class="badge badge-admin">👑 Admin</span>`
+          : `<span class="badge badge-user">🎮 Membre</span>`;
+
+        const verifiedBadge = u.verified
+          ? `<span class="badge badge-check">✓ Vérifié</span>`
+          : `<span class="badge badge-nocheck">Non vérifié</span>`;
+
+        const isSelf = u.id === user.uid;
+
+        return `
+          <tr>
+            <td>
+              <div class="user-cell">
+                ${avatarHtml}
+                <div>
+                  <div class="user-name">${u.username || "–"}</div>
+                  <div class="user-email">${u.email || ""}</div>
+                </div>
+              </div>
+            </td>
+            <td>${roleBadge}</td>
+            <td>${verifiedBadge}</td>
+            <td style="color:var(--text-secondary);">${u.guides}</td>
+            <td style="color:var(--text-muted); white-space:nowrap;">${formatDate(u.createdAt)}</td>
+            <td>
+              <div class="actions-cell">
+                ${u.role !== "admin"
+                  ? `<button class="action-btn success" onclick="confirmAction('promote','${u.id}','${u.username}')">👑 Promouvoir</button>`
+                  : !isSelf
+                    ? `<button class="action-btn" onclick="confirmAction('demote','${u.id}','${u.username}')">🔽 Rétrograder</button>`
+                    : ""
+                }
+                ${u.verified
+                  ? `<button class="action-btn" onclick="confirmAction('unverify','${u.id}','${u.username}')">✕ Retirer vérifié</button>`
+                  : `<button class="action-btn success" onclick="confirmAction('verify','${u.id}','${u.username}')">✓ Vérifier</button>`
+                }
+                ${!isSelf
+                  ? `<button class="action-btn danger" onclick="confirmAction('delete','${u.id}','${u.username}')">🗑</button>`
+                  : ""
+                }
+              </div>
+            </td>
+          </tr>`;
+      }).join("");
+    }
+
+    // ──────────────────────────────────────────────
+    // Filtre & tri (exposés globalement)
+    // ──────────────────────────────────────────────
+    window.filterUsers = () => renderTable();
+
+    window.sortBy = (key) => {
+      if (sortKey === key) sortDir *= -1;
+      else { sortKey = key; sortDir = -1; }
+      // Update sort indicators
+      document.querySelectorAll("thead th span").forEach(s => s.textContent = "");
+      const el = document.getElementById(`sort-${key}`);
+      if (el) el.textContent = sortDir === 1 ? " ↑" : " ↓";
+      document.querySelectorAll("thead th").forEach(th => th.classList.remove("sorted"));
+      renderTable();
+    };
+
+    // ──────────────────────────────────────────────
+    // Actions
+    // ──────────────────────────────────────────────
+    const actionConfig = {
+      promote:  { icon: "👑", title: "Promouvoir en admin",      desc: (n) => `<strong>${n}</strong> aura accès à toutes les fonctions d'administration.`,      btnClass: "btn-primary", btnLabel: "Promouvoir" },
+      demote:   { icon: "🔽", title: "Rétrograder en membre",    desc: (n) => `<strong>${n}</strong> perdra ses droits admin.`,                                   btnClass: "btn-secondary", btnLabel: "Rétrograder" },
+      verify:   { icon: "✅", title: "Marquer comme vérifié",    desc: (n) => `<strong>${n}</strong> obtiendra le badge auteur vérifié sur ses guides.`,           btnClass: "btn-primary", btnLabel: "Vérifier" },
+      unverify: { icon: "✕",  title: "Retirer la vérification",  desc: (n) => `<strong>${n}</strong> perdra son badge auteur vérifié.`,                           btnClass: "btn-secondary", btnLabel: "Retirer" },
+      delete:   { icon: "🗑", title: "Supprimer le compte",      desc: (n) => `Le compte de <strong>${n}</strong> sera définitivement supprimé. Action irréversible.`, btnClass: "btn-danger",    btnLabel: "Supprimer" },
+    };
+
+    window.confirmAction = (type, uid, username) => {
+      const cfg = actionConfig[type];
+      document.getElementById("modal-icon").textContent    = cfg.icon;
+      document.getElementById("modal-title").textContent   = cfg.title;
+      document.getElementById("modal-desc").innerHTML      = cfg.desc(username);
+      const btn = document.getElementById("modal-confirm-btn");
+      btn.className = `btn ${cfg.btnClass}`;
+      btn.textContent = cfg.btnLabel;
+      pendingAction = { type, uid, username };
+      document.getElementById("modal-confirm").classList.add("open");
+    };
+
+    window.closeModal = () => {
+      document.getElementById("modal-confirm").classList.remove("open");
+      pendingAction = null;
+    };
+
+    document.getElementById("modal-confirm").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("modal-confirm")) closeModal();
+    });
+
+    window.executeAction = async () => {
+      if (!pendingAction) return;
+      const { type, uid, username } = pendingAction;
+      closeModal();
+      showLoader();
+
+      try {
+        const userRef = doc(db, "users", uid);
+
+        if (type === "promote") {
+          await updateDoc(userRef, { role: "admin" });
+          allUsers = allUsers.map(u => u.id === uid ? { ...u, role: "admin" } : u);
+          document.getElementById("stat-admins").textContent = allUsers.filter(u => u.role === "admin").length;
+          showToast(`${username} est maintenant admin. 👑`, "success");
+
+        } else if (type === "demote") {
+          await updateDoc(userRef, { role: "user" });
+          allUsers = allUsers.map(u => u.id === uid ? { ...u, role: "user" } : u);
+          document.getElementById("stat-admins").textContent = allUsers.filter(u => u.role === "admin").length;
+          showToast(`${username} est repassé membre.`, "info");
+
+        } else if (type === "verify") {
+          await updateDoc(userRef, { verified: true });
+          allUsers = allUsers.map(u => u.id === uid ? { ...u, verified: true } : u);
+          document.getElementById("stat-verified").textContent = allUsers.filter(u => u.verified).length;
+          showToast(`${username} est maintenant vérifié. ✓`, "success");
+
+        } else if (type === "unverify") {
+          await updateDoc(userRef, { verified: false });
+          allUsers = allUsers.map(u => u.id === uid ? { ...u, verified: false } : u);
+          document.getElementById("stat-verified").textContent = allUsers.filter(u => u.verified).length;
+          showToast(`Badge retiré pour ${username}.`, "info");
+
+        } else if (type === "delete") {
+          // Supprimer le compte Firestore (pas Firebase Auth — nécessite backend)
+          await deleteDoc(userRef);
+          // Supprimer ses guides
+          const guidesSnap = await getDocs(query(collection(db, "guides"), where("authorId", "==", uid)));
+          for (const d of guidesSnap.docs) await deleteDoc(doc(db, "guides", d.id));
+          // Supprimer ses favoris
+          const favsSnap = await getDocs(query(collection(db, "favorites"), where("userId", "==", uid)));
+          for (const d of favsSnap.docs) await deleteDoc(doc(db, "favorites", d.id));
+
+          allUsers = allUsers.filter(u => u.id !== uid);
+          document.getElementById("stat-total").textContent = allUsers.length;
+          showToast(`Compte de ${username} supprimé.`, "info");
+        }
+
+        renderTable();
+
+      } catch (err) {
+        console.error(err);
+        showToast("Erreur lors de l'action.", "error");
+      } finally {
+        hideLoader();
+      }
+    };
+  </script>
+
+</body>
+</html>

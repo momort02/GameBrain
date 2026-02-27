@@ -187,6 +187,19 @@ export function initNavAuth() {
       if (navUser)     navUser.style.display     = "flex";
       if (navUsername) navUsername.textContent   = username;
 
+      // Lien admin — visible uniquement pour les admins
+      if (profile?.role === "admin") {
+        const existingAdminLink = document.getElementById("nav-admin-link");
+        if (!existingAdminLink) {
+          const navLinks = document.getElementById("nav-links");
+          if (navLinks) {
+            const li = document.createElement("li");
+            li.innerHTML = '<a href="admin-users.html" id="nav-admin-link" style="color:#fbbf24;">👑 Admin</a>';
+            navLinks.appendChild(li);
+          }
+        }
+      }
+
       // Mettre à jour l'avatar dans la navbar
       const navAvatar = document.getElementById("nav-avatar");
       if (navAvatar) {
