@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Pages privées inutiles à indexer
+Disallow: /dashboard.html
+Disallow: /profile.html
+Disallow: /create-guide.html
+Disallow: /create-build.html
+Disallow: /setup.html
+Disallow: /add-game.html
+Disallow: /seed.js
+
+Sitemap: https://momort02.github.io/GameBrain/sitemap.xml
